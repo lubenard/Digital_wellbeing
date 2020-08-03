@@ -15,11 +15,22 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/main_textView_screnTime"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:textSize="40sp"
+                android:gravity="center"/>
+
             <com.github.mikephil.charting.charts.PieChart
                 android:id="@+id/main_chart"
                 android:layout_width="match_parent"
-                android:layout_height="500dp"
+                android:layout_height="400dp"
                 android:layout_weight="1" />
+
+
         </LinearLayout>
     </ScrollView>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

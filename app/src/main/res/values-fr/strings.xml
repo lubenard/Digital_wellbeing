@@ -1,0 +1,9 @@
+<resources>
+
+    <string name="main_pie_chart_label">Apps</string>
+
+    <string name="license_app">Cette application est sous License Apache 2.</string>
+    <string name="license_app_generic_start">Cette application utilise</string>
+    <string name="license_app_generic_end">sous la license suivante:</string>
+    <string name="main_textView_screen_time">Aujourd\'hui</string>
+</resources>

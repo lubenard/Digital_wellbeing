@@ -21,6 +21,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/license_app_license" />
+
+        <TextView
+            android:id="@+id/license_charts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/license_app_generic_start"
+            android:textSize="30sp"/>
+
+        <TextView
+            android:id="@+id/license_charts_license"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/license_app_mpandroidCharts" />
     </LinearLayout>
 
 
