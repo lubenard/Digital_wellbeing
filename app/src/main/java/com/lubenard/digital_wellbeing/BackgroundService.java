@@ -20,8 +20,10 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +31,13 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class BackgroundService extends IntentService {
+
+    private dbManager dbManager;
+    private static String todayDate;
+    // This variable is in seconds
+    private static short mTimer = 0;
+    //This variable is in Minutes
+    private short screenTimeToday = 0;
 
     private void getLaunchedApps()
     {
@@ -50,16 +59,13 @@ public class BackgroundService extends IntentService {
                 e.printStackTrace();
             }
 
-            Log.d("BgService", "I am going there");
            UsageStatsManager manager = (UsageStatsManager) getApplicationContext().getSystemService(USAGE_STATS_SERVICE);
             long time = System.currentTimeMillis();
             List<UsageStats> appList = manager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,
                     time - 1000 * 1000, time);
-            Log.d("BgService", "I am going there 2 " + appList.size());
             if (appList != null && appList.size() > 0) {
-                Log.d("BgService", "I am going there 3");
                 for (UsageStats usageStats : appList) {
-                    Log.d("BgService", "for " +  usageStats.getPackageName() + "timeSeconds = " + usageStats.getTotalTimeInForeground());
+                    //Log.d("BgService", "for " +  usageStats.getPackageName() + "timeInMsForeground = " + usageStats.getTotalTimeInForeground());
                 }
             }
 
@@ -99,11 +105,11 @@ public class BackgroundService extends IntentService {
         super("Launch");
     }
 
-    private void sendDataToMainUi(Intent intent)
+    private void sendDataToMainUi(Intent intent, short screenTimeToSend)
     {
         Bundle bundle = intent.getExtras();
         Bundle dataReturn = intent.getExtras();
-        dataReturn.putInt("updateScreenTime", 1);
+        dataReturn.putInt("updateScreenTime", screenTimeToSend);
         if (bundle != null) {
             Messenger messenger = (Messenger) bundle.get("updateScreenTime");
             Message msg = Message.obtain();
@@ -111,17 +117,35 @@ public class BackgroundService extends IntentService {
             try {
                 messenger.send(msg);
             } catch (RemoteException e) {
-                Log.i("error", "error");
+                Log.i("DB", "There was an error when sending the datas to main UI");
             }
         }
     }
 
+    public static void updateTodayDate() {
+        Calendar date = Calendar.getInstance();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        todayDate = dateFormat.format(date.getTime());
+    }
+
+    public static void startNewDay()
+    {
+        mTimer = 0;
+        updateTodayDate();
+    }
+
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        short mTimer = 0;
+        mTimer = 0;
 
         String dataString = intent.getDataString();
         Log.d("BgService", "Background service has been started");
+
+        updateTodayDate();
+
+        dbManager = new dbManager(getApplicationContext());
+
+        screenTimeToday = dbManager.getScreenTime(todayDate);
 
         // Launch Broadcast Receiver for screen time
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
@@ -129,16 +153,20 @@ public class BackgroundService extends IntentService {
         BroadcastReceiver mReceiver = new ScreenReceiver();
         registerReceiver(mReceiver, filter);
 
+        sendDataToMainUi(intent, screenTimeToday);
+
         // Main loop. This loop register if the screen is on which apps are launched.
         while (true)
         {
             Log.d("BgService", "Service is up and running, screen is " + ScreenReceiver.wasScreenOn + " mTimer vaut " + mTimer);
             try {
                 if (mTimer == 60) {
-                    sendDataToMainUi(intent);
+                    Log.d("BG", "Today Date = " + todayDate + " screenTimeToday = " + screenTimeToday);
+                    screenTimeToday++;
+                    dbManager.updateScreenTime(screenTimeToday, todayDate);
+                    sendDataToMainUi(intent, screenTimeToday);
                     mTimer = 0;
-                } else if (ScreenReceiver.wasScreenOn)
-                {
+                } else if (ScreenReceiver.wasScreenOn) {
                     getLaunchedApps();
                     mTimer++;
                 }

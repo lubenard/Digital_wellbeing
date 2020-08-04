@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Following this page https://developer.android.com/guide/topics/ui/settings,
+     this file need to be in this folder -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:key="cat_ui"
+        app:title="UI">
+
+        <ListPreference
+            android:key="ui_theme"
+            android:title="@string/ui_theme_title"
+            android:defaultValue="1"
+            android:entries="@array/ui_theme_titles"
+            android:entryValues="@array/ui_theme_values" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="cat_tweaks"
+        app:title="TWEAKS">
+
+        <CheckBoxPreference
+            app:key="tweaks_notification"
+            app:title="Let a permanent notification"
+            android:defaultValue="false"/>
+
+        <Preference
+            app:key="tweaks_export_data"
+            app:title="Export your data"
+            app:summary="Export your data in XML format"/>
+
+        <Preference
+            app:key="tweaks_erase_data"
+            app:title="Erase all your data"
+            app:summary="This will delete all your data"/>
+
+        <CheckBoxPreference
+            app:key="tweaks_restart_reboot"
+            app:title="Restart the app at reboot"
+            android:defaultValue="true"/>
+
+    </PreferenceCategory>
+
+    <Preference
+        app:key="other_feedback"
+        app:title="Send feedback"
+        app:summary="Report technical issues or suggest new features"/>
+
+</PreferenceScreen>

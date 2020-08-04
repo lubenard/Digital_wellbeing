@@ -2,6 +2,8 @@ package com.lubenard.digital_wellbeing;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -21,6 +23,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -44,7 +47,7 @@ public class MainFragment extends Fragment {
     private String mainTextViewScreenTimeText;
 
     public void updateScreenTime(int addTime) {
-        screenTimeToday += addTime;
+        screenTimeToday = addTime;
         updateTextViewScreenTime();
     }
 
@@ -124,6 +127,22 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                //Launch settings page
+                SettingsFragment nextFrag = new SettingsFragment();
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(android.R.id.content, nextFrag, "findThisFragment")
+                        .addToBackStack(null)
+                        .commit();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -160,11 +179,12 @@ public class MainFragment extends Fragment {
         getLaunchedApps();
 
         Handler handler = new Handler() {
+            @SuppressLint("HandlerLeak")
             @Override
             public void handleMessage(Message msg) {
                 Log.d("MainFragment", "MESSAGE RECEIVED");
                 Bundle reply = msg.getData();
-                updateScreenTime(1);
+                updateScreenTime(reply.getInt("updateScreenTime"));
             }
         };
 
