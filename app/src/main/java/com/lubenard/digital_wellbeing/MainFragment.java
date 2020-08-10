@@ -36,9 +36,12 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainFragment extends Fragment {
+
+    public static final String TAG = "MainFragment";
 
     private PieChart mainPieChart;
     private TextView mainTextViewScreenTime;
@@ -51,21 +54,16 @@ public class MainFragment extends Fragment {
         updateTextViewScreenTime();
     }
 
-    private void getLaunchedApps()
+    public void updateStats(HashMap<String, Integer> app_data)
     {
-        screenTimeToday = 0;
-
-        ActivityManager am = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> runningAppProcessInfo = am.getRunningAppProcesses();
-
-        for (int i = 0; i < runningAppProcessInfo.size(); i++) {
-            Log.d("Running Apps", "This app is running " + runningAppProcessInfo.get(i).processName);
-            //app_data_array.add(new App_data(runningAppProcessInfo.get(i).processName));
-            /*if(runningAppProcessInfo.get(i).processName.equals("com.the.app.you.are.looking.for") {
-                Log.d("");
-            }*/
+        if (app_data != null) {
+            for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
+                Log.d(TAG, "Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
+            }
+            updateMainChartData(app_data);
         }
-
+        else
+            Log.d(TAG, "Data in HASHMAP is NULL");
     }
 
     public void updateTextViewScreenTime()
@@ -76,10 +74,43 @@ public class MainFragment extends Fragment {
         mainTextViewScreenTime.setText(mainTextViewScreenTimeText);
     }
 
-    private void setupMainChart(){
+    private void updateMainChartData(HashMap<String, Integer> app_data) {
+
+        ArrayList<PieEntry> entries = new ArrayList<>();
+
+        for (HashMap.Entry<String, Integer> HMdata : app_data.entrySet()) {
+            // turn your data into Entry objects
+            entries.add(new PieEntry(HMdata.getValue().floatValue(), HMdata.getKey()));
+            Log.d(TAG, "Data in HASHMAP UPDATE " + HMdata.getValue().floatValue() +  " : " + HMdata.getKey());
+        }
+
+        Log.d(TAG, "Update the values.");
 
         //X value : name of label
         //Y value : percentage of label
+
+        /*ArrayList<PieEntry> yValues = new ArrayList<>();
+
+        yValues.add(new PieEntry(34f, "Twitter"));
+        yValues.add(new PieEntry(23f, "Facebook"));
+        yValues.add(new PieEntry(14f, "Snapchat"));
+        yValues.add(new PieEntry(35, "Instagram"));
+        yValues.add(new PieEntry(40, "Camera"));
+        yValues.add(new PieEntry(23, "Gmail"));*/
+
+        PieDataSet dataSet = new PieDataSet(entries, "Apps");
+
+        dataSet.setSliceSpace(1f);
+        dataSet.setSelectionShift(5f);
+        dataSet.setColors(ColorTemplate.JOYFUL_COLORS);
+
+        PieData data = new PieData(dataSet);
+        data.setValueTextSize(10f);
+        data.setValueTextColor(Color.YELLOW);
+        mainPieChart.setData(data);
+    }
+
+    private void setupMainChart(){
 
         // Settings of mainDataCharts
         mainPieChart.setUsePercentValues(true);
@@ -93,30 +124,6 @@ public class MainFragment extends Fragment {
         mainPieChart.setCenterText("Apps");
         mainPieChart.setCenterTextSize(40);
         mainPieChart.setRotationEnabled(false);
-
-        /*yValues.add(new PieEntry(34f, "Twitter"));
-        yValues.add(new PieEntry(23f, "Facebook"));
-        yValues.add(new PieEntry(14f, "Snapchat"));
-        yValues.add(new PieEntry(35, "Instagram"));
-        yValues.add(new PieEntry(40, "Camera"));
-        yValues.add(new PieEntry(23, "Gmail"));*/
-
-        ArrayList<PieEntry> entries = new ArrayList<>();
-        /*for (App_data data : app_data_array) {
-            // turn your data into Entry objects
-            entries.add(new PieEntry(data.getPercentage(), data.getName()));
-        }*/
-
-        PieDataSet dataSet = new PieDataSet(entries, "Apps");
-
-        dataSet.setSliceSpace(1f);
-        dataSet.setSelectionShift(5f);
-        dataSet.setColors(ColorTemplate.JOYFUL_COLORS);
-
-        PieData data = new PieData(dataSet);
-        data.setValueTextSize(10f);
-        data.setValueTextColor(Color.YELLOW);
-        mainPieChart.setData(data);
     }
 
     @Override
@@ -152,39 +159,29 @@ public class MainFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        int mode;
-
-        AppOpsManager appOps = (AppOpsManager) getContext().getSystemService(Context.APP_OPS_SERVICE);
-
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getContext().getPackageName());
-        } else {
-            mode = appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getContext().getPackageName());
-        }
-
-        if (mode != AppOpsManager.MODE_ALLOWED) {
-            // Check for permissions
-            // TODO; handle permissions correctly
-            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-            startActivity(intent);
-        }
-
-        setHasOptionsMenu(true);
+        dbManager dbManager;
 
         mainPieChart = view.findViewById(R.id.main_chart);
         mainTextViewScreenTime = view.findViewById(R.id.main_textView_screnTime);
 
+        Log.d(TAG,"View is recreated");
+
+        dbManager = new dbManager(getContext());
+        updateScreenTime(dbManager.getScreenTime(BackgroundService.updateTodayDate()));
+        updateStats(dbManager.getAppStats(BackgroundService.updateTodayDate()));
+        Log.d(TAG, "screenTimeToday is " + screenTimeToday);
+
+        setHasOptionsMenu(true);
+
         List<Entry> entries = new ArrayList<Entry>();
 
-        getLaunchedApps();
-
         Handler handler = new Handler() {
-            @SuppressLint("HandlerLeak")
             @Override
             public void handleMessage(Message msg) {
-                Log.d("MainFragment", "MESSAGE RECEIVED");
+                Log.d(TAG, "MESSAGE RECEIVED");
                 Bundle reply = msg.getData();
                 updateScreenTime(reply.getInt("updateScreenTime"));
+                updateStats((HashMap<String, Integer>) reply.getSerializable("updateStatsApps"));
             }
         };
 

@@ -7,7 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.util.HashMap;
+
 public class dbManager extends SQLiteOpenHelper {
+
+    public static final String TAG = "DB";
 
     static final String dbName = "dataDB";
 
@@ -15,10 +19,8 @@ public class dbManager extends SQLiteOpenHelper {
     static final String screenTimeTableDate = "date";
     static final String screenTimeTableScreenTimeData = "screenTimeData";
 
-    static final String appNameTable = "appName";
-    static final String appNameTableName = "name";
-
     static final String appScreenTimeTable = "appData";
+    static final String appScreenTimeTableName = "appName";
     static final String appScreenTimeTableDate = "date";
     static final String appScreenTimeTableAppTime = "appTime";
 
@@ -31,11 +33,8 @@ public class dbManager extends SQLiteOpenHelper {
         // Create screen time table
         db.execSQL("CREATE TABLE " + screenTimeTable + " (" + screenTimeTableDate + " DATE , " + screenTimeTableScreenTimeData + " INTEGER)");
 
-        // Create appName table
-        db.execSQL("CREATE TABLE " + appNameTable + " (" + appNameTableName + " TEXT)");
-
         // Create appScreenTime table
-        db.execSQL("CREATE TABLE " + appScreenTimeTable + " (" + appScreenTimeTableDate + " DATE, " + appScreenTimeTableAppTime + "INTEGER)");
+        db.execSQL("CREATE TABLE " + appScreenTimeTable + " (" + appScreenTimeTableName + " TEXT, " + appScreenTimeTableDate + " DATE, " + appScreenTimeTableAppTime + "INTEGER)");
 
         Log.d("DB", "The db has been created, this message should only appear once.");
     }
@@ -46,7 +45,7 @@ public class dbManager extends SQLiteOpenHelper {
     }
 
     // Create a empty column only if there is none existing
-    private void createScreenTimeDate(String date) {
+    private void createScreenTimeRow(String date) {
         SQLiteDatabase readableDb = this.getReadableDatabase();
         String[] columns = new String[]{screenTimeTableDate};
         Cursor c = readableDb.query(screenTimeTable, columns, screenTimeTableDate + "=?",
@@ -61,16 +60,38 @@ public class dbManager extends SQLiteOpenHelper {
             cv.put(screenTimeTableDate, date);
             cv.put(screenTimeTableScreenTimeData, 1);
             db.insert(screenTimeTable, null, cv);
-            getTableAsString(screenTimeTable);
             db.close();
         } else
-            Log.d("DB", "The row for " + date + " already seems to exist");
+            Log.d(TAG, "The row for " + date + " already seems to exist");
+
+        readableDb.close();
+    }
+
+    // Create a empty column only if there is none existing
+    private void createAppDataRow(String date, String appName) {
+        SQLiteDatabase readableDb = this.getReadableDatabase();
+        String[] columns = new String[]{appName};
+        Cursor c = readableDb.query(appScreenTimeTable, columns, appScreenTimeTableName + "=?",
+                new String[]{date}, null, null, null);
+
+        if (c.getCount() == 0) {
+            BackgroundService.startNewDay();
+            Log.d(TAG, "I create the row for " + date);
+            readableDb.close();
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues cv = new ContentValues();
+            cv.put(screenTimeTableDate, date);
+            cv.put(screenTimeTableScreenTimeData, 1);
+            db.insert(screenTimeTable, null, cv);
+            db.close();
+        } else
+            Log.d(TAG, "The row for " + date + " already seems to exist");
 
         readableDb.close();
     }
 
     public void updateScreenTime(int addTime, String date) {
-        createScreenTimeDate(date);
+        createScreenTimeRow(date);
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -81,6 +102,22 @@ public class dbManager extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void updateAppData(HashMap<String, Integer> app_data, String date) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
+            createAppDataRow(date, entry.getKey());
+            Log.d(TAG, "Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
+            cv.put(appScreenTimeTableName, entry.getKey());
+            cv.put(appScreenTimeTableAppTime, entry.getValue());
+            cv.put(appScreenTimeTableAppTime, entry.getValue());
+        }
+        db.update(appScreenTimeTable, cv, appScreenTimeTableDate + "=?", new String []{date});
+        db.close();
+    }
+
+    // Use this function for testing
     public void getTableAsString(String tableName) {
         SQLiteDatabase db = this.getReadableDatabase();
         Log.d("DB", "getTableAsString called");
@@ -99,6 +136,25 @@ public class dbManager extends SQLiteOpenHelper {
         }
     }
 
+    public HashMap<String, Integer> getAppStats(String date) {
+        HashMap<String, Integer> app_data = new HashMap<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String [] columns = new String[]{appScreenTimeTableName, appScreenTimeTableAppTime};
+        Cursor c = db.query(appScreenTimeTable, columns, appScreenTimeTableDate + "=?",
+                new String[]{date}, null, null, null);
+
+        Log.d("DB", "Cursor is " + c.moveToFirst() + " date is " + date);
+
+        while (c.moveToNext()) {
+            app_data.put(c.getString(c.getColumnIndex(appScreenTimeTableName)), c.getInt(c.getColumnIndex(appScreenTimeTableAppTime)));
+            Log.d("DB", "getStatApp adding " + c.getString(c.getColumnIndex(appScreenTimeTableName)) + " and value " + c.getInt(c.getColumnIndex(appScreenTimeTableAppTime)));
+        }
+        c.close();
+
+        return app_data;
+    }
+
     public short getScreenTime(String date) {
         short value = 0;
         SQLiteDatabase db = this.getReadableDatabase();
@@ -115,7 +171,6 @@ public class dbManager extends SQLiteOpenHelper {
             getTableAsString(screenTimeTable);
         c.close();
 
-        Log.d("DB", "value is " + value);
         return value;
     }
 }
