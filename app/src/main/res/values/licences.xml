@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="license_app_license" translatable="false">
+
+    <string name="license_app_title">This app use Apache 2 Licence</string>
+
+    <string name="license_app_licence" translatable="false">
             Copyright 2020 lubenard\n\n
 
         Licensed under the Apache License, Version 2.0 (the "License");\n
@@ -16,7 +19,9 @@
         limitations under the License.\n
     </string>
 
-    <string name="license_app_mpandroidCharts" translatable="false">
+    <string name="license_mpandroidCharts_title">This app use parts of <b>MPAndroidCharts</b> under the Apache 2 Licence</string>
+
+    <string name="license_mpandroidCharts_licence" translatable="false">
             Copyright 2020 Philipp Jahoda\n\n
 
         Licensed under the Apache License, Version 2.0 (the "License");\n

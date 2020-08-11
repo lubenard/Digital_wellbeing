@@ -5,8 +5,7 @@
     <string name="main_textView_screen_time">Aujourd\'hui</string>
 
     <!--License fragment-->
-    <string name="license_app">Cette application est sous License Apache 2.</string>
-    <string name="license_app_generic_start">Cette application utilise</string>
-    <string name="license_app_generic_end">sous la license suivante:</string>
+
+    <!-- Permissions Fragment-->
     <string name="permissions_fragment_text">Pour utiliser cette application, vous avez besoin de lui accorder des authorisations spéciales.\nCette application n\'uploadera aucune de vous données sur aucun server.</string>
 </resources>

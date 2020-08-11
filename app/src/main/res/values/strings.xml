@@ -5,11 +5,6 @@
     <string name="main_textView_screen_time">Today</string>
     <string name="main_pie_chart_label">Apps</string>
 
-    <!--License fragment-->
-    <string name="license_app">This app is under Apache 2 License.</string>
-    <string name="license_app_generic_start">This application uses</string>
-    <string name="license_app_generic_end">under the following license:</string>
-
     <!-- Permissions Fragment-->
     <string name="permissions_fragment_text">In order to use this app, you need to grant special authorization.\nThis app will not upload any of your data on any server.</string>
     <string name="permissions_fragment_button">Grant permissions</string>
@@ -19,4 +14,5 @@
     <string name="settings_ui_theme_clear">Clear</string>
     <string name="settings_ui_theme_dark">Dark</string>
     <string name="settings_ui_theme_black">Black (better for AMOLED)</string>
+    <string name="about_additional_software_licenses">Licences</string>
 </resources>

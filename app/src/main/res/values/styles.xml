@@ -7,4 +7,30 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="Text">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginRight">8dp</item>
+    </style>
+
+    <style name="Text.Licence_Title" parent="Text">
+        <item name="android:textSize">@dimen/font_size_title</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <style name="Text.Licence_Text" parent="Text">
+        <item name="android:textSize">@dimen/font_size_small_text</item>
+        <item name="android:autoLink">email|web</item>
+    </style>
+
+    <style name="Divider">
+        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginRight">8dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">2dp</item>
+        <item name="android:background">@color/colorPrimaryDark</item>
+    </style>
+
 </resources>
