@@ -34,7 +34,7 @@ public class dbManager extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + screenTimeTable + " (" + screenTimeTableDate + " DATE , " + screenTimeTableScreenTimeData + " INTEGER)");
 
         // Create appScreenTime table
-        db.execSQL("CREATE TABLE " + appScreenTimeTable + " (" + appScreenTimeTableName + " TEXT, " + appScreenTimeTableDate + " DATE, " + appScreenTimeTableAppTime + "INTEGER)");
+        db.execSQL("CREATE TABLE " + appScreenTimeTable + " (" + appScreenTimeTableName + " TEXT, " + appScreenTimeTableDate + " DATE, " + appScreenTimeTableAppTime + " INTEGER)");
 
         Log.d("DB", "The db has been created, this message should only appear once.");
     }
@@ -70,9 +70,9 @@ public class dbManager extends SQLiteOpenHelper {
     // Create a empty column only if there is none existing
     private void createAppDataRow(String date, String appName) {
         SQLiteDatabase readableDb = this.getReadableDatabase();
-        String[] columns = new String[]{appName};
-        Cursor c = readableDb.query(appScreenTimeTable, columns, appScreenTimeTableName + "=?",
-                new String[]{date}, null, null, null);
+        String[] columns = new String[]{appScreenTimeTableName};
+        Cursor c = readableDb.query(appScreenTimeTable, columns, appScreenTimeTableName + "=? AND " + appScreenTimeTableDate + "=?",
+                new String[]{appName, date}, null, null, null);
 
         if (c.getCount() == 0) {
             BackgroundService.startNewDay();
@@ -103,8 +103,6 @@ public class dbManager extends SQLiteOpenHelper {
     }
 
     public void updateAppData(HashMap<String, Integer> app_data, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
         ContentValues cv = new ContentValues();
         for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
             createAppDataRow(date, entry.getKey());
@@ -113,6 +111,7 @@ public class dbManager extends SQLiteOpenHelper {
             cv.put(appScreenTimeTableAppTime, entry.getValue());
             cv.put(appScreenTimeTableAppTime, entry.getValue());
         }
+        SQLiteDatabase db = this.getWritableDatabase();
         db.update(appScreenTimeTable, cv, appScreenTimeTableDate + "=?", new String []{date});
         db.close();
     }

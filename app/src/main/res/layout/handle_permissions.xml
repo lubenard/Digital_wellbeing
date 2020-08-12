@@ -7,18 +7,17 @@
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/Text.Licence_Title"
         android:layout_marginTop="154dp"
         android:text="@string/permissions_fragment_text"
-        android:textSize="15sp"
+        android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/permission_button"
-        android:layout_width="wrap_content"
+        android:layout_width="180dp"
         android:layout_height="wrap_content"
         android:background="@drawable/permission_button"
         android:text="@string/permissions_fragment_button"

@@ -10,9 +10,12 @@
     <string name="permissions_fragment_button">Grant permissions</string>
 
     <!--Settings fragment-->
+    <string name="main_screen_option_menu_settings">Settings</string>
     <string name="ui_theme_title">Theme</string>
     <string name="settings_ui_theme_clear">Clear</string>
     <string name="settings_ui_theme_dark">Dark</string>
     <string name="settings_ui_theme_black">Black (better for AMOLED)</string>
     <string name="about_additional_software_licenses">Licences</string>
+
+    <string name="main_screen_option_menu_about">About</string>
 </resources>

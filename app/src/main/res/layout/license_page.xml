@@ -17,6 +17,10 @@
             style="@style/Text.Licence_Text"
             android:text="@string/license_app_licence"/>
 
+        <TextView
+            style="@style/Text.Licence_Text"
+            android:text="@string/license_app_source"/>
+
         <View
             style="@style/Divider" />
 
@@ -27,6 +31,10 @@
         <TextView
             style="@style/Text.Licence_Text"
             android:text="@string/license_mpandroidCharts_licence"/>
+
+        <TextView
+            style="@style/Text.Licence_Text"
+            android:text="@string/license_mpandroidCharts_source"/>
 
     </LinearLayout>
 </ScrollView>

@@ -23,6 +23,7 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.lubenard.digital_wellbeing.settings.LicenseFragment;
 import com.lubenard.digital_wellbeing.settings.SettingsFragment;
 
 import java.util.ArrayList;
@@ -79,15 +80,6 @@ public class MainFragment extends Fragment {
         //X value : name of label
         //Y value : percentage of label
 
-        /*ArrayList<PieEntry> yValues = new ArrayList<>();
-
-        yValues.add(new PieEntry(34f, "Twitter"));
-        yValues.add(new PieEntry(23f, "Facebook"));
-        yValues.add(new PieEntry(14f, "Snapchat"));
-        yValues.add(new PieEntry(35, "Instagram"));
-        yValues.add(new PieEntry(40, "Camera"));
-        yValues.add(new PieEntry(23, "Gmail"));*/
-
         PieDataSet dataSet = new PieDataSet(entries, "Apps");
 
         dataSet.setSliceSpace(1f);
@@ -98,6 +90,7 @@ public class MainFragment extends Fragment {
         data.setValueTextSize(10f);
         data.setValueTextColor(Color.YELLOW);
         mainPieChart.setData(data);
+        mainPieChart.invalidate();
     }
 
     private void setupMainChart(){
@@ -128,9 +121,17 @@ public class MainFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 //Launch settings page
-                SettingsFragment nextFrag = new SettingsFragment();
+                SettingsFragment settingsFrag = new SettingsFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(android.R.id.content, nextFrag, "findThisFragment")
+                        .replace(android.R.id.content, settingsFrag, "findThisFragment")
+                        .addToBackStack(null)
+                        .commit();
+                return true;
+            case R.id.action_licences:
+                //Launch about page
+                LicenseFragment aboutFrag = new LicenseFragment();
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(android.R.id.content, aboutFrag, "findThisFragment")
                         .addToBackStack(null)
                         .commit();
                 return true;
