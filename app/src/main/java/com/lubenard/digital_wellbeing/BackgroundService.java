@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 
 public class BackgroundService extends IntentService {
 
+    public static final String TAG = "BackgroundService";
+
     private dbManager dbManager;
     private static String todayDate;
     // This variable is in seconds
@@ -161,5 +163,14 @@ public class BackgroundService extends IntentService {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (dbManager != null){
+            dbManager.closeDb();
+            Log.i(TAG,"mDBHelper.close() in " + this.getClass());
+        }
+        super.onDestroy();
     }
 }
