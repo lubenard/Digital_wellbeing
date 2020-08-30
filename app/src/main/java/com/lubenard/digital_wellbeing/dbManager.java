@@ -2,6 +2,8 @@ package com.lubenard.digital_wellbeing;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -15,26 +17,54 @@ public class dbManager extends SQLiteOpenHelper {
 
     static final String dbName = "dataDB";
 
+    // screen time table
     static final String screenTimeTable = "screenTime";
     static final String screenTimeTableDate = "date";
-    static final String screenTimeTableScreenTimeData = "screenTimeData";
+    static final String screenTimeTableScreenTime = "screenTime";
 
-    static final String appScreenTimeTable = "appData";
-    static final String appScreenTimeTableName = "appName";
-    static final String appScreenTimeTableDate = "date";
-    static final String appScreenTimeTableAppTime = "appTime";
+    // appTime table
+    static final String appTimeTable = "appTime";
+    static final String appTimeTableDate = "date";
+    static final String appTimeTableTimeSpent = "timeSpent";
+    static final String appTimeTableAppId = "appId";
+
+    // apps table
+    static final String appsTable = "apps";
+    static final String appsTableId = "id";
+    static final String appsTablePkgName = "appPkgName";
+    static final String appsTableName = "appName";
+
+    // Join from appTime and apps tables
+    static final String viewAppsTables="ViewAppsTables";
+
+    private Context context;
 
     public dbManager(Context context) {
-        super(context, dbName , null,33);
+        super(context, dbName , null,1);
+        this.context = context;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create screen time table
-        db.execSQL("CREATE TABLE " + screenTimeTable + " (" + screenTimeTableDate + " DATE , " + screenTimeTableScreenTimeData + " INTEGER)");
+        // Create screenTime table
+        db.execSQL("CREATE TABLE " + screenTimeTable + " (" + screenTimeTableDate + " DATE PRIMARY KEY, " + screenTimeTableScreenTime + " INTEGER)");
 
-        // Create appScreenTime table
-        db.execSQL("CREATE TABLE " + appScreenTimeTable + " (" + appScreenTimeTableName + " TEXT, " + appScreenTimeTableDate + " DATE, " + appScreenTimeTableAppTime + " INTEGER)");
+        // Create appTime table
+        db.execSQL("CREATE TABLE " + appTimeTable + " (" + appTimeTableAppId + " INTEGER, " + appTimeTableDate + " DATE, " + appTimeTableTimeSpent + " INTEGER, " +
+                "PRIMARY KEY(" + appTimeTableAppId + ", " +appTimeTableDate + "))");
+
+        // Create apps table
+        db.execSQL("CREATE TABLE " + appsTable + " (" + appsTableId + " INTEGER PRIMARY KEY AUTOINCREMENT, " + appsTablePkgName + " TEXT, " + appsTableName + " TEXT)");
+
+        // Create view joining appTime and apps tables
+        db.execSQL("CREATE VIEW " + viewAppsTables + " AS SELECT " +
+                appsTable + "." + appsTablePkgName + ", " +
+                appsTable + "." + appsTableName + ", " +
+                appTimeTable + "." + appTimeTableTimeSpent + ", " +
+                appTimeTable + "." + appTimeTableDate + "" +
+                " FROM " + appTimeTable + " JOIN " + appsTable +
+                " ON " + appTimeTable + "." + appTimeTableAppId + " = " + appsTable + "." + appsTableId
+        );
 
         Log.d("DB", "The db has been created, this message should only appear once.");
     }
@@ -44,82 +74,105 @@ public class dbManager extends SQLiteOpenHelper {
 
     }
 
-    // Create a empty column only if there is none existing
-    private void createScreenTimeRow(String date) {
-        SQLiteDatabase readableDb = this.getReadableDatabase();
-        String[] columns = new String[]{screenTimeTableDate};
-        Cursor c = readableDb.query(screenTimeTable, columns, screenTimeTableDate + "=?",
-                new String[]{date}, null, null, null);
-
-        if (c.getCount() == 0) {
-            BackgroundService.startNewDay();
-            Log.d("DB", "I create the row for " + date);
-            readableDb.close();
-            SQLiteDatabase db = this.getWritableDatabase();
-            ContentValues cv = new ContentValues();
-            cv.put(screenTimeTableDate, date);
-            cv.put(screenTimeTableScreenTimeData, 1);
-            db.insert(screenTimeTable, null, cv);
-            db.close();
-        } else
-            Log.d(TAG, "The row for " + date + " already seems to exist");
-
-        readableDb.close();
+    public String getAppNameFromPkgName(String pkgName) {
+        final PackageManager pm = context.getPackageManager();
+        String appName;
+        try {
+            appName = (String) pm.getApplicationLabel(pm.getApplicationInfo(pkgName, PackageManager.GET_META_DATA));
+        } catch (final PackageManager.NameNotFoundException e) {
+            appName = "";
+        }
+        return appName;
     }
 
-    // Create a empty column only if there is none existing
-    private void createAppDataRow(String date, String appName) {
+    // Create a app Entry only if non existent:
+    // Example: you just installed a app, which is not added in the db yet
+    private void createAppRow(String date, String appPkgName) {
         SQLiteDatabase readableDb = this.getReadableDatabase();
-        String[] columns = new String[]{appScreenTimeTableName};
-        Cursor c = readableDb.query(appScreenTimeTable, columns, appScreenTimeTableName + "=? AND " + appScreenTimeTableDate + "=?",
-                new String[]{appName, date}, null, null, null);
+        String[] columns = new String[]{appsTablePkgName};
+        Cursor c = readableDb.query(appsTable, columns, appsTablePkgName + "=?",
+                new String[]{appPkgName}, null, null, null);
 
         if (c.getCount() == 0) {
-            BackgroundService.startNewDay();
-            Log.d(TAG, "I create the row for " + date);
+            Log.d(TAG, "AppData: I create the entry for " + appPkgName);
             readableDb.close();
             SQLiteDatabase db = this.getWritableDatabase();
             ContentValues cv = new ContentValues();
-            cv.put(screenTimeTableDate, date);
-            cv.put(screenTimeTableScreenTimeData, 1);
-            db.insert(screenTimeTable, null, cv);
+            cv.put(appsTablePkgName, appPkgName);
+            cv.put(appsTableName, getAppNameFromPkgName(appPkgName));
+            db.insert(appsTable, null, cv);
             db.close();
         } else
-            Log.d(TAG, "The row for " + date + " already seems to exist");
-
+            Log.d(TAG, "AppData: The entry for " + appPkgName + " already seems to exist");
         readableDb.close();
     }
 
     public void updateScreenTime(int addTime, String date) {
-        createScreenTimeRow(date);
-
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
-        cv.put(screenTimeTableScreenTimeData, addTime);
-        db.update(screenTimeTable, cv, screenTimeTableDate + "=?", new String []{date});
+        cv.put(screenTimeTableScreenTime, addTime);
 
+        Log.d(TAG, "updateScreenTime: update with new value (time = " + addTime + ") for date = " + date);
+        int u = db.update(screenTimeTable, cv, screenTimeTableDate + "=?", new String []{date});
+        if (u == 0) {
+            Log.d(TAG, "updateScreenTime: update does not seems to work, insert data: (time = " + addTime + ") for date = " + date);
+            cv.put(screenTimeTableDate, date);
+            db.insertWithOnConflict(screenTimeTable, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+        }
         db.close();
     }
 
+    public int getIdFromPkgName(String pkgName)
+    {
+        int value;
+        SQLiteDatabase readableDb = this.getReadableDatabase();
+        String[] columns = new String[]{appsTableId};
+        Cursor c = readableDb.query(appsTable, columns, appsTablePkgName + "=?",
+                new String[]{pkgName}, null, null, null);
+        if (c.moveToFirst())
+            value = c.getInt(0);
+        else
+            value = -1;
+        readableDb.close();
+        return value;
+    }
+
     public void updateAppData(HashMap<String, Integer> app_data, String date) {
-        ContentValues cv = new ContentValues();
+
+        SQLiteDatabase writeableDb;
+
+        //SQLiteDatabase readableDb = this.getReadableDatabase();
+        String[] columns = new String[]{appTimeTableDate, appTimeTableAppId};
+
         for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
-            createAppDataRow(date, entry.getKey());
-            Log.d(TAG, "Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
-            cv.put(appScreenTimeTableName, entry.getKey());
-            cv.put(appScreenTimeTableAppTime, entry.getValue());
-            cv.put(appScreenTimeTableAppTime, entry.getValue());
+            ContentValues cv = new ContentValues();
+
+            createAppRow(date, entry.getKey());
+
+            writeableDb = this.getWritableDatabase();
+
+            Log.d(TAG, "updateAppData: Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
+            cv.put(appTimeTableTimeSpent, entry.getValue());
+
+            Log.d(TAG, "updateScreenTime: update with new value (timeSpent = " + entry.getValue()+ "IdFromPkgName = " + getIdFromPkgName(entry.getKey()) + ") for date = " + date);
+            int u = writeableDb.update(appTimeTable, cv, appTimeTableDate + "=? AND " + appTimeTableAppId + "=?", new String []{date, String.valueOf(getIdFromPkgName(entry.getKey()))});
+            if (u == 0) {
+                Log.d(TAG, "updateAppData: update does not seems to work, insert data: (timeSpent = " + entry.getValue()+ "IdFromPkgName = " + getIdFromPkgName(entry.getKey()) + ") for date = " + date);
+                cv.put(appTimeTableDate, date);
+                cv.put(appTimeTableAppId, getIdFromPkgName(entry.getKey()));
+                writeableDb.insertWithOnConflict(screenTimeTable, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+            }
+            writeableDb.close();
         }
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.update(appScreenTimeTable, cv, appScreenTimeTableDate + "=?", new String []{date});
-        db.close();
+        //readableDb.close();
+        //writeableDb.close();
     }
 
     // Use this function for testing
     public void getTableAsString(String tableName) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Log.d("DB", "getTableAsString called");
+        Log.d("DB", "getTableAsString called for " + tableName);
         Log.d("DB", String.format("Table %s:\n", tableName));
         Cursor allRows  = db.rawQuery("SELECT * FROM " + tableName, null);
         if (allRows.moveToFirst() ){
@@ -139,18 +192,19 @@ public class dbManager extends SQLiteOpenHelper {
         HashMap<String, Integer> app_data = new HashMap<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String [] columns = new String[]{appScreenTimeTableName, appScreenTimeTableAppTime};
-        Cursor c = db.query(appScreenTimeTable, columns, appScreenTimeTableDate + "=?",
+        String [] columns = new String[]{appsTableName, appTimeTableTimeSpent};
+        Cursor c = db.query(viewAppsTables, columns, appTimeTableDate + "=?",
                 new String[]{date}, null, null, null);
 
-        Log.d("DB", "Cursor is " + c.moveToFirst() + " date is " + date);
+        Log.d("DB", "getAppStats: Cursor is " + c.moveToFirst() + " date is " + date);
 
         while (c.moveToNext()) {
-            app_data.put(c.getString(c.getColumnIndex(appScreenTimeTableName)), c.getInt(c.getColumnIndex(appScreenTimeTableAppTime)));
-            Log.d("DB", "getStatApp adding " + c.getString(c.getColumnIndex(appScreenTimeTableName)) + " and value " + c.getInt(c.getColumnIndex(appScreenTimeTableAppTime)));
+            app_data.put(c.getString(c.getColumnIndex(appsTableName)), c.getInt(c.getColumnIndex(appTimeTableTimeSpent)));
+            Log.d("DB", "getStatApp adding " + c.getString(c.getColumnIndex(appsTableName)) + " and value " + c.getInt(c.getColumnIndex(appTimeTableTimeSpent)));
         }
         c.close();
-
+        getTableAsString(appsTable);
+        getTableAsString(appTimeTable);
         return app_data;
     }
 
@@ -158,7 +212,7 @@ public class dbManager extends SQLiteOpenHelper {
         short value = 0;
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String [] columns = new String[]{screenTimeTableScreenTimeData};
+        String [] columns = new String[]{screenTimeTableScreenTime};
         Cursor c = db.query(screenTimeTable, columns, screenTimeTableDate + "=?",
                 new String[]{date}, null, null, null);
 

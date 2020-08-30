@@ -45,7 +45,7 @@
 
     <Preference
         app:key="other_feedback"
-        app:title="Send feedback"
-        app:summary="Report technical issues or suggest new features"/>
+        app:title="@string/settings_other_feedback_title"
+        app:summary="@string/settings_other_feedback_description"/>
 
 </PreferenceScreen>

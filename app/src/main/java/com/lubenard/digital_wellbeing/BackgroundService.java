@@ -50,17 +50,11 @@ public class BackgroundService extends IntentService {
         //This map contains the app_name (unique), and the time in minutes
          app_data = new HashMap<String, Integer>();
 
-        /*ActivityManager manager = (ActivityManager) getApplicationContext().getSystemService(ACTIVITY_SERVICE);
-        List< ActivityManager.RunningTaskInfo > runningTaskInfo = manager.getRunningTasks(1);
-
-        ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
-        Log.d("BgService", "This app is running " + componentInfo.getPackageName());*/
-
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            String string_date = "01-August-2020 00:00:00";
+            String string_date = updateTodayDate() + " 00:00:00";
 
             long milliseconds = 0;
-            SimpleDateFormat f = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+            SimpleDateFormat f = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             try {
                 Date d = f.parse(string_date);
                 milliseconds = d.getTime();
@@ -71,48 +65,17 @@ public class BackgroundService extends IntentService {
            UsageStatsManager manager = (UsageStatsManager) getApplicationContext().getSystemService(USAGE_STATS_SERVICE);
             long time = System.currentTimeMillis();
             List<UsageStats> appList = manager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,
-                    time - 1000 * 1000, time);
+                    milliseconds, time);
             if (appList != null && appList.size() > 0) {
                 for (UsageStats usageStats : appList) {
                     if (TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()) > 0) {
-                        app_data.put(usageStats.getPackageName(), (int) TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()));
+                        app_data.put(dbManager.getAppNameFromPkgName(usageStats.getPackageName()), (int) TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()));
                         Log.d("BgService", "for " + usageStats.getPackageName() + " timeInMsForeground = " + usageStats.getTotalTimeInForeground());
                     }
                 }
             }
-
             printAppDataMap(app_data);
-
-            /*Map<String, UsageStats> usageStatsMap = manager.queryAndAggregateUsageStats(milliseconds, System.currentTimeMillis());
-            HashMap<String, Double> usageMap = new HashMap<>();
-
-            Log.d("BgService", "I am going there");
-            for (String packageName : usageStatsMap.keySet()) {
-                UsageStats us = usageStatsMap.get(packageName);
-                Log.d("BgService", "I am looping ?");
-                try {
-                    long timeMs = us.getTotalTimeInForeground();
-                    Double timeSeconds = new Double(timeMs / 1000);
-                    usageMap.put(packageName, timeSeconds);
-                    Log.d("BgService", "for " +  packageName + "timeSeconds = " + timeSeconds);
-                } catch (Exception e) {
-                    Log.d("BgService", "Getting timeInForeground resulted in an exception");
-                }
-            }*/
         }
-
-        Parcelable.Creator<UsageStats> CREATOR;
-
-        /*ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> runningAppProcessInfo = am.getRunningAppProcesses();
-
-        for (int i = 0; i < runningAppProcessInfo.size(); i++) {
-            Log.d("BgService", "This app is running " + runningAppProcessInfo.get(i).processName);
-            //app_data_array.add(new App_data(runningAppProcessInfo.get(i).processName));
-            if(runningAppProcessInfo.get(i).processName.equals("com.the.app.you.are.looking.for") {
-                Log.d("");
-            }
-        }*/
     }
 
     private void sendDataToMainUi(Intent intent, short screenTimeToSend, HashMap<String, Integer> app_data)
@@ -192,7 +155,7 @@ public class BackgroundService extends IntentService {
                     mTimer++;
                 }
                 // This delay is just here to help synchronising.
-                // TODO: Look to remove it ? I will more accurate.
+                // TODO: Look to remove it ? I will be more accurate.
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();

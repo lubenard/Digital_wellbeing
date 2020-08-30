@@ -71,8 +71,8 @@ public class MainFragment extends Fragment {
 
         for (HashMap.Entry<String, Integer> HMdata : app_data.entrySet()) {
             // turn your data into Entry objects
-            entries.add(new PieEntry(HMdata.getValue().floatValue(), HMdata.getKey()));
-            Log.d(TAG, "Data in HASHMAP UPDATE " + HMdata.getValue().floatValue() +  " : " + HMdata.getKey());
+            entries.add(new PieEntry(HMdata.getValue(), HMdata.getKey()));
+            Log.d(TAG, "Data in HASHMAP UPDATE " + HMdata.getValue() +  " : " + HMdata.getKey());
         }
 
         Log.d(TAG, "Update the values.");
@@ -151,20 +151,25 @@ public class MainFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         dbManager dbManager;
+        String todayDate;
+
+        getActivity().setTitle(R.string.app_name);
 
         mainPieChart = view.findViewById(R.id.main_chart);
         mainTextViewScreenTime = view.findViewById(R.id.main_textView_screnTime);
 
+        setupMainChart();
+
+        todayDate = BackgroundService.updateTodayDate();
+
         Log.d(TAG,"View is recreated");
 
         dbManager = new dbManager(getContext());
-        updateScreenTime(dbManager.getScreenTime(BackgroundService.updateTodayDate()));
-        updateStats(dbManager.getAppStats(BackgroundService.updateTodayDate()));
+        updateScreenTime(dbManager.getScreenTime(todayDate));
+        updateStats(dbManager.getAppStats(todayDate));
         Log.d(TAG, "screenTimeToday is " + screenTimeToday);
 
         setHasOptionsMenu(true);
-
-        List<Entry> entries = new ArrayList<Entry>();
 
         Handler handler = new Handler() {
             @Override
@@ -179,6 +184,6 @@ public class MainFragment extends Fragment {
         updateTextViewScreenTime();
         getContext().startService(new Intent(MainFragment.this.getActivity(), BackgroundService.class).putExtra("updateScreenTime", new Messenger(handler)));
 
-        setupMainChart();
+
     }
 }
