@@ -19,9 +19,9 @@ public class LaunchMainFragment extends AppCompatActivity {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        if (handlePermissions.checkIfUsagePermissionGranted(this)) {
+        if (HandlePermissions.checkIfUsagePermissionGranted(this)) {
             // If permissions not granted
-            handlePermissions fragment = new handlePermissions();
+            HandlePermissions fragment = new HandlePermissions();
             fragmentTransaction.replace(android.R.id.content, fragment);
         } else {
             // If permission is granted

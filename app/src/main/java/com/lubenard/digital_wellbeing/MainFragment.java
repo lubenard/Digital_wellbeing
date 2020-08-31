@@ -177,7 +177,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        dbManager dbManager;
+        DbManager dbManager;
         String todayDate;
 
         getActivity().setTitle(R.string.app_name);
@@ -191,7 +191,7 @@ public class MainFragment extends Fragment {
 
         Log.d(TAG,"View is recreated");
 
-        dbManager = new dbManager(getContext());
+        dbManager = new DbManager(getContext());
         updateScreenTime(dbManager.getScreenTime(todayDate));
         updateStats(dbManager.getAppStats(todayDate));
         Log.d(TAG, "screenTimeToday is " + screenTimeToday);

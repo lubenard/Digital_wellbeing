@@ -37,7 +37,7 @@ public class BackgroundService extends IntentService {
 
     public static final String TAG = "BackgroundService";
 
-    private dbManager dbManager;
+    private DbManager dbManager;
     private static String todayDate;
     // This variable is in seconds
     private static short mTimer = 0;
@@ -156,7 +156,7 @@ public class BackgroundService extends IntentService {
 
         updateTodayDate();
 
-        dbManager = new dbManager(getApplicationContext());
+        dbManager = new DbManager(getApplicationContext());
 
         screenTimeToday = dbManager.getScreenTime(todayDate);
 

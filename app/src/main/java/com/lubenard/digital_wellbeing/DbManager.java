@@ -15,7 +15,7 @@ import java.util.HashMap;
  * Handle the DB used to save datas.
  * Theses datas are sent to Musk in order to build Skynet.
  */
-public class dbManager extends SQLiteOpenHelper {
+public class DbManager extends SQLiteOpenHelper {
 
     public static final String TAG = "DB";
 
@@ -46,7 +46,7 @@ public class dbManager extends SQLiteOpenHelper {
     private SQLiteDatabase readableDB;
     private SQLiteDatabase writableDB;
 
-    public dbManager(Context context) {
+    public DbManager(Context context) {
         super(context, dbName , null,1);
         this.context = context;
         this.readableDB = this.getReadableDatabase();

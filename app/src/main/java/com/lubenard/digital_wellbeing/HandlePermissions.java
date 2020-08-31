@@ -17,9 +17,9 @@ import androidx.fragment.app.Fragment;
 /**
  * This Fragment show to the user how to grant access to the usage permission.
  */
-public class handlePermissions extends Fragment {
+public class HandlePermissions extends Fragment {
 
-    public static final String TAG = "handlePermission";
+    public static final String TAG = "HandlePermission";
 
     /**
      * Check if Usage Permission is granted

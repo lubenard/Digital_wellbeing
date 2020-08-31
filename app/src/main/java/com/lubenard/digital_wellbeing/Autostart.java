@@ -12,7 +12,7 @@ import androidx.preference.PreferenceManager;
 /**
  * Start the app at boot, if the user decide in the settings
  */
-public class autostart extends BroadcastReceiver {
+public class Autostart extends BroadcastReceiver {
 
     public void onReceive(Context context, Intent arg1)
     {
