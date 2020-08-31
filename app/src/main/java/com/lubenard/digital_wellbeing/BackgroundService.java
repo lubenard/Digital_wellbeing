@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Service running in backgrround so we can use other apps without the service being stopped
+ */
 public class BackgroundService extends IntentService {
 
     public static final String TAG = "BackgroundService";
@@ -42,11 +45,16 @@ public class BackgroundService extends IntentService {
     private short screenTimeToday = 0;
     private HashMap<String, Integer> app_data;
 
-    // This is the constructor
+    /**
+     * Constructor of the class
+     */
     public BackgroundService() {
         super("Launch");
     }
 
+    /**
+     * Get the apps launched daily and they're usage time
+     */
     private void getLaunchedApps()
     {
         //This map contains the app_name (unique), and the time in minutes
@@ -80,6 +88,12 @@ public class BackgroundService extends IntentService {
         }
     }
 
+    /**
+     * When called, send data with time spent + app usage to main UI to refresh stats and graphs
+     * @param intent The intent to send data to
+     * @param screenTimeToSend The screen time (in minutes) to send to UI
+     * @param app_data The app data (App Name + Time spent on in minutes) to send to UI
+     */
     private void sendDataToMainUi(Intent intent, short screenTimeToSend, HashMap<String, Integer> app_data)
     {
         Bundle bundle = intent.getExtras();
@@ -93,11 +107,15 @@ public class BackgroundService extends IntentService {
             try {
                 messenger.send(msg);
             } catch (RemoteException e) {
-                Log.i("DB", "There was an error when sending the datas to main UI");
+                Log.i(TAG, "There was an error when sending the datas to main UI");
             }
         }
     }
 
+    /**
+     * Get the today's date in formatted format
+     * @return Return today's date
+     */
     public static String updateTodayDate() {
         Calendar date = Calendar.getInstance();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -111,6 +129,10 @@ public class BackgroundService extends IntentService {
         updateTodayDate();
     }
 
+    /**
+     * Only for debug, print app_data Hashmap
+     * @param app_data the hashmap to print. Must be a <String, Integer>.
+     */
     public void printAppDataMap(HashMap<String, Integer> app_data)
     {
         for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
@@ -118,6 +140,12 @@ public class BackgroundService extends IntentService {
         }
     }
 
+    /**
+     * Main loop for the background service.
+     * Launch the BackGround service and send initals datas to main UI.
+     * Launch the main loop used to count every minute.
+     * @param intent
+     */
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         mTimer = 0;
@@ -146,6 +174,7 @@ public class BackgroundService extends IntentService {
             Log.d("BgService", "Service is up and running, screen is " + ScreenReceiver.wasScreenOn + " mTimer vaut " + mTimer);
             try {
                 if (mTimer == 60) {
+                    // Every minute, update DB + refresh data on main UI
                     Log.d("BG", "Today Date = " + todayDate + " screenTimeToday = " + screenTimeToday);
                     screenTimeToday++;
                     dbManager.updateScreenTime(screenTimeToday, todayDate);
@@ -153,6 +182,7 @@ public class BackgroundService extends IntentService {
                     sendDataToMainUi(intent, screenTimeToday, app_data);
                     mTimer = 0;
                 } else if (ScreenReceiver.wasScreenOn) {
+                    // Else, increase timer
                     getLaunchedApps();
                     mTimer++;
                 }

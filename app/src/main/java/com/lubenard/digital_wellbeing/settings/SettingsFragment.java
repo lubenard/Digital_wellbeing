@@ -9,6 +9,9 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.lubenard.digital_wellbeing.R;
 
+/**
+ * Settings page.
+ */
 public class SettingsFragment extends PreferenceFragmentCompat {
 
     @Override

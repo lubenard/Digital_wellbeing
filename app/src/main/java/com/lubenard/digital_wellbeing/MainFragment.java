@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Main UI Fragment
+ */
 public class MainFragment extends Fragment {
 
     public static final String TAG = "MainFragment";
@@ -45,6 +48,10 @@ public class MainFragment extends Fragment {
         updateTextViewScreenTime();
     }
 
+    /**
+     * Update the stats on the main page
+     * @param app_data app data
+     */
     public void updateStats(HashMap<String, Integer> app_data)
     {
         if (app_data != null) {
@@ -57,6 +64,9 @@ public class MainFragment extends Fragment {
             Log.d(TAG, "Data in HASHMAP is NULL");
     }
 
+    /**
+     * Update the Time spent text
+     */
     public void updateTextViewScreenTime()
     {
         mainTextViewScreenTimeText = getResources().getString(R.string.main_textView_screen_time);
@@ -65,6 +75,10 @@ public class MainFragment extends Fragment {
         mainTextViewScreenTime.setText(mainTextViewScreenTimeText);
     }
 
+    /**
+     * Update the main Pie chart datas
+     * @param app_data new app datas
+     */
     private void updateMainChartData(HashMap<String, Integer> app_data) {
 
         ArrayList<PieEntry> entries = new ArrayList<>();
@@ -93,6 +107,9 @@ public class MainFragment extends Fragment {
         mainPieChart.invalidate();
     }
 
+    /**
+     * When the app launch, set the basic main chart
+     */
     private void setupMainChart(){
 
         // Settings of mainDataCharts
@@ -109,6 +126,11 @@ public class MainFragment extends Fragment {
         mainPieChart.setRotationEnabled(false);
     }
 
+    /**
+     * Create the 3 grey dots menu (top right)
+     * @param menu
+     * @param inflater
+     */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -116,6 +138,11 @@ public class MainFragment extends Fragment {
         super.onCreateOptionsMenu(menu,inflater);
     }
 
+    /**
+     * Handle the click on the 3 grey dots menu (top right)
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -171,6 +198,7 @@ public class MainFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
+        // Handle the Handler send every minute to update datas and charts
         Handler handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {

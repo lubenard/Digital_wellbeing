@@ -11,6 +11,10 @@ import android.util.Log;
 
 import java.util.HashMap;
 
+/**
+ * Handle the DB used to save datas.
+ * Theses datas are sent to Musk in order to build Skynet.
+ */
 public class dbManager extends SQLiteOpenHelper {
 
     public static final String TAG = "DB";
@@ -49,6 +53,10 @@ public class dbManager extends SQLiteOpenHelper {
         this.writableDB = this.getWritableDatabase();
     }
 
+    /**
+     * If the db does not exist, create it with thoses fields.
+     * @param db The database Object
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         // Create screenTime table
@@ -74,11 +82,24 @@ public class dbManager extends SQLiteOpenHelper {
         Log.d("DB", "The db has been created, this message should only appear once.");
     }
 
+    /**
+     * If you plan to improve the database, you might want to use this function as a automated
+     * upgrade tool for db.
+     * @param sqLiteDatabase
+     * @param i Old DB version
+     * @param i1 New DB version
+     */
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
     }
 
+    /**
+     * Transform package name to App name
+     * For example: 'com.facebook.messenger' -> 'Messenger'
+     * @param pkgName The package name you want
+     * @return The name of the app
+     */
     public String getAppNameFromPkgName(String pkgName) {
         final PackageManager pm = context.getPackageManager();
         String appName;
@@ -90,8 +111,11 @@ public class dbManager extends SQLiteOpenHelper {
         return appName;
     }
 
-    // Create a app Entry only if non existent:
-    // Example: you just installed a app, which is not added in the db yet
+    /**
+     * Create a app Entry only if non existent:
+     * Example: you just installed a app, which is not added in the db yet
+     */
+    //TODO: Might need to recode with insertWithOnConflict
     private void createAppRow(String date, String appPkgName) {
         String[] columns = new String[]{appsTablePkgName};
         Cursor c = readableDB.query(appsTable, columns, appsTablePkgName + "=?",
@@ -107,6 +131,10 @@ public class dbManager extends SQLiteOpenHelper {
             Log.d(TAG, "AppData: The entry for " + appPkgName + " already seems to exist");
     }
 
+    /**
+     * Create a Screen Time only if non existent:
+     * Example: Past midnight, this is a new day, no entry exist in the db for that day
+     */
     public void updateScreenTime(int addTime, String date) {
         ContentValues cv = new ContentValues();
         cv.put(screenTimeTableScreenTime, addTime);
@@ -120,6 +148,11 @@ public class dbManager extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Get the id from the appsTable table with specified app package
+     * @param pkgName Package name
+     * @return The id of that package name in the table
+     */
     public int getIdFromPkgName(String pkgName)
     {
         int value;
@@ -133,6 +166,11 @@ public class dbManager extends SQLiteOpenHelper {
         return value;
     }
 
+    /**
+     * Update the app data in the db
+     * @param app_data Contains the data of the apps to update
+     * @param date Set at which date insert data
+     */
     public void updateAppData(HashMap<String, Integer> app_data, String date) {
 
         String[] columns = new String[]{appTimeTableDate, appTimeTableAppId};
@@ -157,7 +195,10 @@ public class dbManager extends SQLiteOpenHelper {
         }
     }
 
-    // Use this function for testing
+    /**
+     * Use this function for testing. Print all the content of a given table
+     * @param tableName Table name to print
+     */
     public void getTableAsString(String tableName) {
         Log.d("DB", "getTableAsString called for " + tableName);
         Log.d("DB", String.format("Table %s:\n", tableName));
@@ -175,6 +216,11 @@ public class dbManager extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Get the app datas for a specific date
+     * @param date date to which you want to get the datas
+     * @return The datas fetched from the DB
+     */
     public HashMap<String, Integer> getAppStats(String date) {
         HashMap<String, Integer> app_data = new HashMap<>();
 
@@ -194,6 +240,11 @@ public class dbManager extends SQLiteOpenHelper {
         return app_data;
     }
 
+    /**
+     * Get the screen time for a specific date
+     * @param date date to which you want to get the datas
+     * @return The screen time fetched from the DB
+     */
     public short getScreenTime(String date) {
         short value = 0;
 
@@ -212,6 +263,9 @@ public class dbManager extends SQLiteOpenHelper {
         return value;
     }
 
+    /**
+     * Close the db when finished using it.
+     */
     public void closeDb() {
         if (writableDB != null) { writableDB.close();}
         if (readableDB != null) { readableDB.close();}

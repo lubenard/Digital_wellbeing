@@ -4,6 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+/**
+ * Used to detect if screen is on or off
+ * (We do not count the time if the screen is off)
+ */
 public class ScreenReceiver extends BroadcastReceiver {
 
     // That code is coming from https://thinkandroid.wordpress.com/2010/01/24/handling-screen-off-and-screen-on-intents/

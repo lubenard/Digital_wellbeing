@@ -9,6 +9,9 @@ import androidx.fragment.app.Fragment;
 
 import com.lubenard.digital_wellbeing.R;
 
+/**
+ * License Fragment found under 'about'
+ */
 public class LicenseFragment extends Fragment {
 
     @Override
