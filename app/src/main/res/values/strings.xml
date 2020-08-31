@@ -22,4 +22,5 @@
     <string name="about_additional_software_licenses">Licences</string>
     <string name="main_screen_option_menu_about">About</string>
     <string name="settings_fragment_title">Settings</string>
+	<string name="icon_of_the_app_main_listview_on_elem">Icon of the app</string>
 </resources>
