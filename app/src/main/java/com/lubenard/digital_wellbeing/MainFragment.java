@@ -3,7 +3,9 @@ package com.lubenard.digital_wellbeing;
 import androidx.fragment.app.Fragment;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -15,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.PieChart;
@@ -22,11 +25,13 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.lubenard.digital_wellbeing.custom_component.MainFragmentListview;
 import com.lubenard.digital_wellbeing.settings.LicenseFragment;
 import com.lubenard.digital_wellbeing.settings.SettingsFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Main UI Fragment
@@ -41,6 +46,8 @@ public class MainFragment extends Fragment {
     private int screenTimeToday;
     private String mainTextViewScreenTimeText;
 
+    private HashMap<String, Integer> db_app_data;
+
     public void updateScreenTime(int addTime) {
         screenTimeToday = addTime;
         updateTextViewScreenTime();
@@ -50,8 +57,7 @@ public class MainFragment extends Fragment {
      * Update the stats on the main page
      * @param app_data app data
      */
-    public void updateStats(HashMap<String, Integer> app_data)
-    {
+    public void updateStats(HashMap<String, Integer> app_data) {
         if (app_data != null) {
             for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
                 Log.d(TAG, "Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
@@ -65,8 +71,7 @@ public class MainFragment extends Fragment {
     /**
      * Update the Time spent text
      */
-    public void updateTextViewScreenTime()
-    {
+    public void updateTextViewScreenTime() {
         mainTextViewScreenTimeText = getResources().getString(R.string.main_textView_screen_time);
         mainTextViewScreenTimeText += ":\n" + screenTimeToday / 60 + "h " + screenTimeToday % 60 + "m";
 
@@ -78,7 +83,6 @@ public class MainFragment extends Fragment {
      * @param app_data new app datas
      */
     private void updateMainChartData(HashMap<String, Integer> app_data) {
-
         ArrayList<PieEntry> entries = new ArrayList<>();
 
         for (HashMap.Entry<String, Integer> HMdata : app_data.entrySet()) {
@@ -108,8 +112,7 @@ public class MainFragment extends Fragment {
     /**
      * When the app launch, set the basic main chart
      */
-    private void setupMainChart(){
-
+    private void setupMainChart() {
         // Settings of mainDataCharts
         mainPieChart.setUsePercentValues(true);
         mainPieChart.getDescription().setEnabled(false);
@@ -122,6 +125,24 @@ public class MainFragment extends Fragment {
         mainPieChart.setCenterText("Apps");
         mainPieChart.setCenterTextSize(40);
         mainPieChart.setRotationEnabled(false);
+    }
+
+    /**
+     * Get icon from package name
+     * @param packageName Example 'com.facebook.messenger'
+     * @return The drawable if found, or null if not
+     */
+    private Drawable getIconFromPkgName(String packageName) {
+        try
+        {
+            return getContext().getPackageManager().getApplicationIcon(packageName);
+        }
+        catch (PackageManager.NameNotFoundException e)
+        {
+            Log.d(TAG, "icon for " + packageName + " not found");
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -169,7 +190,15 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        return inflater.inflate(R.layout.main_Fragment, container, false);
+        return inflater.inflate(R.layout.main_fragment, container, false);
+    }
+
+    /**
+     * Update the list of app under the main chart
+     * @param app_data New datas to update with.
+     */
+    public void updateListView(HashMap<String, Integer> app_data) {
+
     }
 
     @Override
@@ -180,6 +209,7 @@ public class MainFragment extends Fragment {
 
         getActivity().setTitle(R.string.app_name);
 
+        LinearLayout mainLinearlayout = view.findViewById(R.id.main_linear_layout);
         mainPieChart = view.findViewById(R.id.main_chart);
         mainTextViewScreenTime = view.findViewById(R.id.main_textView_screnTime);
 
@@ -187,12 +217,25 @@ public class MainFragment extends Fragment {
 
         todayDate = BackgroundService.updateTodayDate();
 
-        Log.d(TAG,"View is recreated");
+        Log.d(TAG,"View is created");
 
         dbManager = new DbManager(getContext());
+
+        db_app_data = dbManager.getAppStats(todayDate);
+
         updateScreenTime(dbManager.getScreenTime(todayDate));
-        updateStats(dbManager.getAppStats(todayDate));
+        updateStats(db_app_data);
         Log.d(TAG, "screenTimeToday is " + screenTimeToday);
+
+        for (Map.Entry<String, Integer> entry : db_app_data.entrySet()) {
+            Log.d(TAG, entry.getKey() + " = " + entry.getValue());
+            MainFragmentListview test = new MainFragmentListview(getContext());
+            test.setApp_name(entry.getKey());
+            test.setPercentage((entry.getValue() / screenTimeToday) * 100);
+            test.setTimer(entry.getValue());
+            test.setIcon(getIconFromPkgName(entry.getKey()));
+            mainLinearlayout.addView(test);
+        }
 
         setHasOptionsMenu(true);
 

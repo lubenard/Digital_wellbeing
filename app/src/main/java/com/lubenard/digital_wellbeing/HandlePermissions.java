@@ -44,7 +44,7 @@ public class HandlePermissions extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        return inflater.inflate(R.layout.handlePermissions_Fragment, container, false);
+        return inflater.inflate(R.layout.handle_permissions_fragment, container, false);
     }
 
     @Override

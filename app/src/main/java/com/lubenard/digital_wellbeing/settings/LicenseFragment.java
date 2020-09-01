@@ -18,7 +18,7 @@ public class LicenseFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        return inflater.inflate(R.layout.license_Fragment, container, false);
+        return inflater.inflate(R.layout.license_fragment, container, false);
     }
 
     @Override
