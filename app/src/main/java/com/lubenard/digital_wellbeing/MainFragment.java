@@ -48,6 +48,12 @@ public class MainFragment extends Fragment {
 
     private HashMap<String, Integer> db_app_data;
 
+    private View mainFragmentView;
+
+    LinearLayout mainLinearlayout;
+
+    HashMap<String, MainFragmentListview> listviewAppPkgHashMap = new HashMap<>();
+
     public void updateScreenTime(int addTime) {
         screenTimeToday = addTime;
         updateTextViewScreenTime();
@@ -63,6 +69,7 @@ public class MainFragment extends Fragment {
                 Log.d(TAG, "Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
             }
             updateMainChartData(app_data);
+            updateListView(app_data);
         }
         else
             Log.d(TAG, "Data in HASHMAP is NULL");
@@ -198,7 +205,27 @@ public class MainFragment extends Fragment {
      * @param app_data New datas to update with.
      */
     public void updateListView(HashMap<String, Integer> app_data) {
-
+        MainFragmentListview listViewElement;
+        for (Map.Entry<String, Integer> entry : app_data.entrySet()) {
+            // Check if the listview element already exist
+            // If it does, no need to recreate one, only update it
+            if ((listViewElement = listviewAppPkgHashMap.get(entry.getKey())) != null) {
+                Log.d(TAG, "listview: Only need to update for " + entry.getKey());
+                listViewElement.setApp_name(entry.getKey());
+                listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
+                listViewElement.setTimer(entry.getValue());
+                listViewElement.invalidate();
+            } else {
+                Log.d(TAG, "listview: View needed to be created for " + entry.getKey());
+                listViewElement = new MainFragmentListview(getContext());
+                listviewAppPkgHashMap.put(entry.getKey(), listViewElement);
+                listViewElement.setApp_name(entry.getKey());
+                listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
+                listViewElement.setTimer(entry.getValue());
+                listViewElement.setIcon(getIconFromPkgName(entry.getKey()));
+                mainLinearlayout.addView(listViewElement);
+            }
+        }
     }
 
     @Override
@@ -207,17 +234,18 @@ public class MainFragment extends Fragment {
         DbManager dbManager;
         String todayDate;
 
+        Log.d(TAG,"View is created");
+
         getActivity().setTitle(R.string.app_name);
 
-        LinearLayout mainLinearlayout = view.findViewById(R.id.main_linear_layout);
+        mainFragmentView = view;
+        mainLinearlayout = mainFragmentView.findViewById(R.id.main_linear_layout);
         mainPieChart = view.findViewById(R.id.main_chart);
         mainTextViewScreenTime = view.findViewById(R.id.main_textView_screnTime);
 
         setupMainChart();
 
         todayDate = BackgroundService.updateTodayDate();
-
-        Log.d(TAG,"View is created");
 
         dbManager = new DbManager(getContext());
 
@@ -227,14 +255,17 @@ public class MainFragment extends Fragment {
         updateStats(db_app_data);
         Log.d(TAG, "screenTimeToday is " + screenTimeToday);
 
+        // Create the app listview at first
         for (Map.Entry<String, Integer> entry : db_app_data.entrySet()) {
             Log.d(TAG, entry.getKey() + " = " + entry.getValue());
-            MainFragmentListview test = new MainFragmentListview(getContext());
-            test.setApp_name(entry.getKey());
-            test.setPercentage((entry.getValue() / screenTimeToday) * 100);
-            test.setTimer(entry.getValue());
-            test.setIcon(getIconFromPkgName(entry.getKey()));
-            mainLinearlayout.addView(test);
+            MainFragmentListview app = new MainFragmentListview(getContext());
+            // Put all the element in the hashmap, avoiding recreating them
+            listviewAppPkgHashMap.put(entry.getKey(), app);
+            app.setApp_name(entry.getKey());
+            app.setPercentage((entry.getValue() / screenTimeToday) * 100);
+            app.setTimer(entry.getValue());
+            app.setIcon(getIconFromPkgName(entry.getKey()));
+            mainLinearlayout.addView(app);
         }
 
         setHasOptionsMenu(true);

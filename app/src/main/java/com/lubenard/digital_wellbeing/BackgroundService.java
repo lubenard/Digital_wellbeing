@@ -98,16 +98,18 @@ public class BackgroundService extends IntentService {
     {
         Bundle bundle = intent.getExtras();
         Bundle dataReturn = intent.getExtras();
-        dataReturn.putSerializable("updateStatsApps", app_data);
-        dataReturn.putInt("updateScreenTime", screenTimeToSend);
-        if (bundle != null) {
-            Messenger messenger = (Messenger) bundle.get("updateScreenTime");
-            Message msg = Message.obtain();
-            msg.setData(dataReturn);
-            try {
-                messenger.send(msg);
-            } catch (RemoteException e) {
-                Log.i(TAG, "There was an error when sending the datas to main UI");
+        if (dataReturn != null) {
+            dataReturn.putSerializable("updateStatsApps", app_data);
+            dataReturn.putInt("updateScreenTime", screenTimeToSend);
+            if (bundle != null) {
+                Messenger messenger = (Messenger) bundle.get("updateScreenTime");
+                Message msg = Message.obtain();
+                msg.setData(dataReturn);
+                try {
+                    messenger.send(msg);
+                } catch (RemoteException e) {
+                    Log.i(TAG, "There was an error when sending the datas to main UI");
+                }
             }
         }
     }
