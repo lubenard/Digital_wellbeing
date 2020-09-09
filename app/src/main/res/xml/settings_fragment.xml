@@ -12,9 +12,9 @@
         <ListPreference
             android:key="ui_theme"
             android:title="@string/ui_theme_title"
-            android:defaultValue="1"
             android:entries="@array/ui_theme_titles"
-            android:entryValues="@array/ui_theme_values" />
+            android:entryValues="@array/ui_theme_values"
+            android:defaultValue="dark"/>
     </PreferenceCategory>
 
     <PreferenceCategory

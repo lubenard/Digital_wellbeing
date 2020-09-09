@@ -17,7 +17,7 @@ public class Autostart extends BroadcastReceiver {
     public void onReceive(Context context, Intent arg1)
     {
         SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(context /* Activity context */);
+                PreferenceManager.getDefaultSharedPreferences(context);
         Boolean autostart_option = sharedPreferences.getBoolean("tweaks_restart_reboot", true);
         Log.d("Autostart", "Autostart option is " + autostart_option);
         if (autostart_option) {

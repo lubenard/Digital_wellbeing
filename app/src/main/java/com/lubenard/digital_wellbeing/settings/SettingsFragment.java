@@ -6,11 +6,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.lubenard.digital_wellbeing.NotificationsHandler;
 import com.lubenard.digital_wellbeing.R;
+
+import java.util.logging.Logger;
 
 /**
  * Settings page.
@@ -22,8 +25,36 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.settings_fragment, rootKey);
         getActivity().setTitle(R.string.settings_fragment_title);
 
-        //AppCompatDelegate.setDefaultNightMode(
-        //        AppCompatDelegate.MODE_NIGHT_YES);
+        // Theme change listener
+        /*final Preference theme = findPreference("ui_theme");
+        theme.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                Log.d("Setting page", "Theme value has changed for " + newValue);
+                switch (newValue.toString()) {
+                    case "dark":
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                        break;
+                    case "white":
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                        break;
+                    case "battery_saver":
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY);
+                        break;
+                    case "system":
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                        break;
+                }
+                Log.d("Test", "Is this notif played ?");
+                getFragmentManager()
+                        .beginTransaction()
+                        .detach(SettingsFragment.this)
+                        .attach(SettingsFragment.this)
+                        .commit();
+                return true;
+            }
+        });*/
+
 
         //Permanent notif change listener
         final Preference permanentNotif = findPreference("tweaks_permanent_notification");
