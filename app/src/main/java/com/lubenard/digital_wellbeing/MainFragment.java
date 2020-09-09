@@ -1,8 +1,10 @@
 package com.lubenard.digital_wellbeing;
 
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -228,6 +230,14 @@ public class MainFragment extends Fragment {
         }
     }
 
+    private void checkConfig() {
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(getContext());
+        Boolean permanent_notification_option = sharedPreferences.getBoolean("tweaks_permanent_notification", true);
+        if (permanent_notification_option)
+            new NotificationsHandler().createPermanentNotification(getContext());
+    }
+
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -244,6 +254,9 @@ public class MainFragment extends Fragment {
         mainTextViewScreenTime = view.findViewById(R.id.main_textView_screnTime);
 
         setupMainChart();
+
+        //Before launching charts and other graphics elements, let's check the config.
+        checkConfig();
 
         todayDate = BackgroundService.updateTodayDate();
 

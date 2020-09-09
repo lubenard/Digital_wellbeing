@@ -22,7 +22,7 @@
         app:title="TWEAKS">
 
         <CheckBoxPreference
-            app:key="tweaks_notification"
+            app:key="tweaks_permanent_notification"
             app:title="Let a permanent notification"
             android:defaultValue="false"/>
 
