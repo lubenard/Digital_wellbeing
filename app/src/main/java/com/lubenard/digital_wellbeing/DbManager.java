@@ -2,7 +2,6 @@ package com.lubenard.digital_wellbeing;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -80,6 +79,10 @@ public class DbManager extends SQLiteOpenHelper {
         );
 
         Log.d("DB", "The db has been created, this message should only appear once.");
+    }
+
+    public static String getDBName() {
+        return dbName;
     }
 
     /**

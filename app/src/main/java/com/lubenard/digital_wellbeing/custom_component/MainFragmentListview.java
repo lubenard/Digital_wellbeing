@@ -1,5 +1,6 @@
 package com.lubenard.digital_wellbeing.custom_component;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -24,11 +25,7 @@ public class MainFragmentListview extends LinearLayout {
     public void setTimer(int timer)
     {
         TextView app_usage = findViewById(R.id.app_usage_time);
-
-        int hours = timer / 60; //since both are ints, you get an int
-        int minutes = timer % 60;
-
-        String text = String.format("%d:%02d", hours, minutes);
+        @SuppressLint("DefaultLocale") String text = String.format("%d:%02d", timer / 60, timer % 60);
         app_usage.setText(text);
     }
 

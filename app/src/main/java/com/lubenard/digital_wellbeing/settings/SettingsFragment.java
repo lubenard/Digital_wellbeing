@@ -1,15 +1,22 @@
 package com.lubenard.digital_wellbeing.settings;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Messenger;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import com.lubenard.digital_wellbeing.BackgroundService;
+import com.lubenard.digital_wellbeing.DbManager;
+import com.lubenard.digital_wellbeing.MainFragment;
 import com.lubenard.digital_wellbeing.NotificationsHandler;
 import com.lubenard.digital_wellbeing.R;
 
@@ -54,6 +61,28 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });*/
+
+        // reset preference click listener
+        Preference reset = findPreference("tweaks_erase_data");
+        reset.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Delete all your data")
+                        .setMessage("Are you sure you want to all your data ? All losses are definitive")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Delete DB
+                                Log.d(, )
+                                getContext().deleteDatabase(DbManager.getDBName());
+
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+                return true;
+            }
+        });
 
 
         //Permanent notif change listener

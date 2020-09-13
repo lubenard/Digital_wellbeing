@@ -22,6 +22,7 @@ public class Autostart extends BroadcastReceiver {
         Log.d("Autostart", "Autostart option is " + autostart_option);
         if (autostart_option) {
             Intent intent = new Intent(context,BackgroundService.class);
+            MainFragment.setBgService(intent);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent);
             } else {

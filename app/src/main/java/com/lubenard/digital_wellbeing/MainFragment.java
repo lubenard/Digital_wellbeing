@@ -1,11 +1,9 @@
 package com.lubenard.digital_wellbeing;
 
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
-import androidx.preference.PreferenceManager;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -46,6 +44,7 @@ public class MainFragment extends Fragment {
     private PieChart mainPieChart;
     private TextView mainTextViewScreenTime;
 
+    //This variable is in minutes
     private int screenTimeToday;
     private String mainTextViewScreenTimeText;
 
@@ -53,7 +52,10 @@ public class MainFragment extends Fragment {
 
     private View mainFragmentView;
 
-    LinearLayout mainLinearlayout;
+    LinearLayout mainLinearLayout;
+
+    private static Intent bgService = null;
+
 
     HashMap<String, MainFragmentListview> listviewAppPkgHashMap = new HashMap<>();
 
@@ -69,8 +71,13 @@ public class MainFragment extends Fragment {
     public void updateStats(HashMap<String, Integer> app_data) {
         if (app_data != null) {
             for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
+                if (entry.getKey().equals("")) {
+                    app_data.remove(entry.getKey());
+                    Log.d(TAG, "Sanitized data");
+                }
                 Log.d(TAG, "Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
             }
+
             updateMainChartData(app_data);
             updateListView(app_data);
         }
@@ -82,9 +89,9 @@ public class MainFragment extends Fragment {
      * Update the Time spent text
      */
     public void updateTextViewScreenTime() {
-        mainTextViewScreenTimeText = getResources().getString(R.string.main_textView_screen_time);
-        mainTextViewScreenTimeText += ":\n" + screenTimeToday / 60 + "h " + screenTimeToday % 60 + "m";
-
+        @SuppressLint("DefaultLocale") String mainTextViewScreenTimeText = String.format("%s\n%d:%02d",
+                getResources().getString(R.string.main_textView_screen_time),
+                screenTimeToday / 60, screenTimeToday % 60);
         mainTextViewScreenTime.setText(mainTextViewScreenTimeText);
     }
 
@@ -143,8 +150,7 @@ public class MainFragment extends Fragment {
      * @return The drawable if found, or null if not
      */
     private Drawable getIconFromPkgName(String packageName) {
-        try
-        {
+        try {
             return getContext().getPackageManager().getApplicationIcon(packageName);
         }
         catch (PackageManager.NameNotFoundException e)
@@ -226,9 +232,17 @@ public class MainFragment extends Fragment {
                 listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
                 listViewElement.setTimer(entry.getValue());
                 listViewElement.setIcon(getIconFromPkgName(entry.getKey()));
-                mainLinearlayout.addView(listViewElement);
+                mainLinearLayout.addView(listViewElement);
             }
         }
+    }
+
+    public static Intent getBgService() {
+        return bgService;
+    }
+
+    public static void setBgService(Intent newBgService) {
+        bgService = newBgService;
     }
 
     @Override
@@ -242,13 +256,13 @@ public class MainFragment extends Fragment {
         getActivity().setTitle(R.string.app_name);
 
         mainFragmentView = view;
-        mainLinearlayout = mainFragmentView.findViewById(R.id.main_linear_layout);
+        mainLinearLayout = mainFragmentView.findViewById(R.id.main_linear_layout);
         mainPieChart = view.findViewById(R.id.main_chart);
         mainTextViewScreenTime = view.findViewById(R.id.main_textView_screnTime);
 
         setupMainChart();
 
-        todayDate = BackgroundService.updateTodayDate();
+        todayDate = BackgroundService.getTodayDate();
 
         dbManager = new DbManager(getContext());
 
@@ -268,7 +282,7 @@ public class MainFragment extends Fragment {
             app.setPercentage((entry.getValue() / screenTimeToday) * 100);
             app.setTimer(entry.getValue());
             app.setIcon(getIconFromPkgName(entry.getKey()));
-            mainLinearlayout.addView(app);
+            mainLinearLayout.addView(app);
         }
 
         setHasOptionsMenu(true);
@@ -285,6 +299,12 @@ public class MainFragment extends Fragment {
         };
 
         updateTextViewScreenTime();
-        getContext().startService(new Intent(MainFragment.this.getActivity(), BackgroundService.class).putExtra("updateScreenTime", new Messenger(handler)));
+
+        // No need to relaunch a service if it has already been started by AutoStart
+        if (bgService == null) {
+            setBgService(new Intent(MainFragment.this.getActivity(), BackgroundService.class));
+            bgService.putExtra("updateScreenTime", new Messenger(handler));
+        }
+        getContext().startService(bgService);
     }
 }
