@@ -27,7 +27,7 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.lubenard.digital_wellbeing.custom_component.MainFragmentListview;
-import com.lubenard.digital_wellbeing.settings.LicenseFragment;
+import com.lubenard.digital_wellbeing.settings.AboutFragment;
 import com.lubenard.digital_wellbeing.settings.SettingsFragment;
 
 import java.util.ArrayList;
@@ -191,7 +191,7 @@ public class MainFragment extends Fragment {
                 return true;
             case R.id.action_licences:
                 //Launch about page
-                LicenseFragment aboutFrag = new LicenseFragment();
+                AboutFragment aboutFrag = new AboutFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(android.R.id.content, aboutFrag, "findThisFragment")
                         .addToBackStack(null)

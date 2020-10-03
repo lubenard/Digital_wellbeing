@@ -72,7 +72,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // Delete DB
-                                Log.d(, )
+                                //Log.d(, )
                                 getContext().deleteDatabase(DbManager.getDBName());
 
                             }
@@ -83,7 +83,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
-
 
         //Permanent notif change listener
         final Preference permanentNotif = findPreference("tweaks_permanent_notification");

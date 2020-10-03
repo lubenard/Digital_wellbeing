@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name" translatable="false">Digital WellBeing</string>
+    <string name="app_description">The goal of this app is to track your use of your apps.\n
+    This way, you have data about the time you spend on your phone.\n
+    Feel free to contribute ! </string>
 
     <!--Main fragment-->
     <string name="main_textView_screen_time">Today</string>
@@ -8,6 +11,9 @@
     <!-- Permissions Fragment-->
     <string name="permissions_fragment_text">In order to use this app, you need to grant special authorization.\nThis app will not upload any of your data on any server.</string>
     <string name="permissions_fragment_button">Grant permissions</string>
+
+    <!--About Fragment-->
+    <string name="see_licences_button">See Licences used</string>
 
     <!--Settings fragment-->
     <string name="main_screen_option_menu_settings">Settings</string>
