@@ -33,7 +33,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         getActivity().setTitle(R.string.settings_fragment_title);
 
         // Theme change listener
-        /*final Preference theme = findPreference("ui_theme");
+        final Preference theme = findPreference("ui_theme");
         theme.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -53,14 +53,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         break;
                 }
                 Log.d("Test", "Is this notif played ?");
-                getFragmentManager()
+                /*getFragmentManager()
                         .beginTransaction()
                         .detach(SettingsFragment.this)
                         .attach(SettingsFragment.this)
-                        .commit();
+                        .commit();*/
                 return true;
             }
-        });*/
+        });
 
         // reset preference click listener
         Preference reset = findPreference("tweaks_erase_data");
@@ -74,7 +74,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                                 // Delete DB
                                 //Log.d(, )
                                 getContext().deleteDatabase(DbManager.getDBName());
-
                             }
                         })
                         .setNegativeButton(android.R.string.no, null)

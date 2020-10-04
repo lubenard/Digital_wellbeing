@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -25,6 +26,7 @@ import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.lubenard.digital_wellbeing.custom_component.MainFragmentListview;
 import com.lubenard.digital_wellbeing.settings.AboutFragment;
@@ -77,7 +79,6 @@ public class MainFragment extends Fragment {
                 }
                 Log.d(TAG, "Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
             }
-
             updateMainChartData(app_data);
             updateListView(app_data);
         }
@@ -95,6 +96,17 @@ public class MainFragment extends Fragment {
         mainTextViewScreenTime.setText(mainTextViewScreenTimeText);
     }
 
+    public String getAppName(String packageName) {
+        final PackageManager pm = getContext().getPackageManager();
+        ApplicationInfo ai;
+        try {
+            ai = pm.getApplicationInfo(packageName, 0);
+        } catch (final PackageManager.NameNotFoundException e) {
+            ai = null;
+        }
+        return (String) (ai != null ? pm.getApplicationLabel(ai) : "(unknown)");
+    }
+
     /**
      * Update the main Pie chart datas
      * @param app_data new app datas
@@ -104,7 +116,7 @@ public class MainFragment extends Fragment {
 
         for (HashMap.Entry<String, Integer> HMdata : app_data.entrySet()) {
             // turn your data into Entry objects
-            entries.add(new PieEntry(HMdata.getValue(), HMdata.getKey()));
+            entries.add(new PieEntry(HMdata.getValue(), getAppName(HMdata.getKey())));
             Log.d(TAG, "Data in HASHMAP UPDATE " + HMdata.getValue() +  " : " + HMdata.getKey());
         }
 
@@ -120,6 +132,7 @@ public class MainFragment extends Fragment {
         dataSet.setColors(ColorTemplate.JOYFUL_COLORS);
 
         PieData data = new PieData(dataSet);
+        data.setValueFormatter(new PercentFormatter());
         data.setValueTextSize(10f);
         data.setValueTextColor(Color.YELLOW);
         mainPieChart.setData(data);
@@ -150,6 +163,7 @@ public class MainFragment extends Fragment {
      * @return The drawable if found, or null if not
      */
     private Drawable getIconFromPkgName(String packageName) {
+        Log.d(TAG,"GetIconFromPKG: "+ packageName);
         try {
             return getContext().getPackageManager().getApplicationIcon(packageName);
         }
@@ -220,19 +234,27 @@ public class MainFragment extends Fragment {
             // If it does, no need to recreate one, only update it
             if ((listViewElement = listviewAppPkgHashMap.get(entry.getKey())) != null) {
                 Log.d(TAG, "listview: Only need to update for " + entry.getKey());
-                listViewElement.setApp_name(entry.getKey());
-                listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
+                listViewElement.setApp_name(getAppName(entry.getKey()));
+                if (screenTimeToday > 0)
+                    listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
+                else
+                    listViewElement.setPercentage(0);
                 listViewElement.setTimer(entry.getValue());
                 listViewElement.invalidate();
             } else {
                 Log.d(TAG, "listview: View needed to be created for " + entry.getKey());
                 listViewElement = new MainFragmentListview(getContext());
                 listviewAppPkgHashMap.put(entry.getKey(), listViewElement);
-                listViewElement.setApp_name(entry.getKey());
-                listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
+                listViewElement.setApp_name(getAppName(entry.getKey()));
+                if (screenTimeToday > 0)
+                    listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
+                else
+                    listViewElement.setPercentage(0);
                 listViewElement.setTimer(entry.getValue());
                 listViewElement.setIcon(getIconFromPkgName(entry.getKey()));
+                listViewElement.invalidate();
                 mainLinearLayout.addView(listViewElement);
+
             }
         }
     }
@@ -269,7 +291,7 @@ public class MainFragment extends Fragment {
         db_app_data = dbManager.getAppStats(todayDate);
 
         updateScreenTime(dbManager.getScreenTime(todayDate));
-        updateStats(db_app_data);
+        //updateStats(db_app_data);
         Log.d(TAG, "screenTimeToday is " + screenTimeToday);
 
         // Create the app listview at first

@@ -75,7 +75,7 @@ public class BackgroundService extends IntentService {
             if (appList != null && appList.size() > 0) {
                 for (UsageStats usageStats : appList) {
                     if (TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()) > 0) {
-                        app_data.put(dbManager.getAppNameFromPkgName(usageStats.getPackageName()), (int) TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()));
+                        app_data.put(usageStats.getPackageName(), (int) TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()));
                         Log.d("BgService", "for " + usageStats.getPackageName() + " timeInMsForeground = " + usageStats.getTotalTimeInForeground());
                     }
                 }
@@ -90,11 +90,12 @@ public class BackgroundService extends IntentService {
      * @param screenTimeToSend The screen time (in minutes) to send to UI
      * @param app_data The app data (App Name + Time spent on in minutes) to send to UI
      */
-    private void sendDataToMainUi(Intent intent, short screenTimeToSend, HashMap<String, Integer> app_data)
+    private void sendDataToMainUi(Intent intent, short screenTimeToSend, HashMap<String,Integer> app_data)
     {
         Bundle bundle = intent.getExtras();
         Bundle dataReturn = intent.getExtras();
         if (dataReturn != null) {
+            dataReturn.putSerializable("updateStatsApps", app_data);
             dataReturn.putSerializable("updateStatsApps", app_data);
             dataReturn.putInt("updateScreenTime", screenTimeToSend);
             if (bundle != null) {
@@ -142,8 +143,6 @@ public class BackgroundService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         mTimer = 0;
 
-        String dataString = intent.getDataString();
-
         Log.d("BgService", "Background service has been started");
 
         dbManager = new DbManager(getApplicationContext());
@@ -156,6 +155,7 @@ public class BackgroundService extends IntentService {
         mReceiver = new ScreenReceiver();
         registerReceiver(mReceiver, filter);
 
+        getLaunchedApps();
         sendDataToMainUi(intent, screenTimeToday, app_data);
 
         // Main loop. This loop register if the screen is on which apps are launched.

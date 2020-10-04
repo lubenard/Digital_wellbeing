@@ -30,6 +30,4 @@
                 android:layout_weight="1" />
         </LinearLayout>
     </ScrollView>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

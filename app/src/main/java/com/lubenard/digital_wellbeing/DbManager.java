@@ -227,15 +227,15 @@ public class DbManager extends SQLiteOpenHelper {
     public HashMap<String, Integer> getAppStats(String date) {
         HashMap<String, Integer> app_data = new HashMap<>();
 
-        String [] columns = new String[]{appsTableName, appTimeTableTimeSpent};
+        String [] columns = new String[]{appsTablePkgName, appTimeTableTimeSpent};
         Cursor c = readableDB.query(viewAppsTables, columns, appTimeTableDate + "=?",
                 new String[]{date}, null, null, null);
 
         Log.d("DB", "getAppStats: Cursor is " + c.moveToFirst() + " date is " + date);
 
         while (c.moveToNext()) {
-            app_data.put(c.getString(c.getColumnIndex(appsTableName)), c.getInt(c.getColumnIndex(appTimeTableTimeSpent)));
-            Log.d("DB", "getStatApp adding " + c.getString(c.getColumnIndex(appsTableName)) + " and value " + c.getInt(c.getColumnIndex(appTimeTableTimeSpent)));
+            app_data.put(c.getString(c.getColumnIndex(appsTablePkgName)), c.getInt(c.getColumnIndex(appTimeTableTimeSpent)));
+            Log.d("DB", "getStatApp adding " + c.getString(c.getColumnIndex(appsTablePkgName)) + " and value " + c.getInt(c.getColumnIndex(appTimeTableTimeSpent)));
         }
         c.close();
         getTableAsString(appsTable);
