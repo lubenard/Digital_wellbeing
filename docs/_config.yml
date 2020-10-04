@@ -1,0 +1,12 @@
+theme: jekyll-theme-cayman
+
+show_downloads: true
+
+title: Digital Wellbeing
+
+#Override github URL
+github:
+  repository_name: Digital WellBeing
+  repository_url: https://github.com/lubenard/Digital_wellbeing
+  zip_url: https://github.com/lubenard/Digital_wellbeing/zipball/master
+  tar_url: https://github.com/lubenard/Digital_wellbeing/tarball/master
