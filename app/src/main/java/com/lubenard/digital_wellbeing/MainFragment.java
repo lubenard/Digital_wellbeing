@@ -235,10 +235,10 @@ public class MainFragment extends Fragment {
             if ((listViewElement = listviewAppPkgHashMap.get(entry.getKey())) != null) {
                 Log.d(TAG, "listview: Only need to update for " + entry.getKey());
                 listViewElement.setApp_name(getAppName(entry.getKey()));
-                if (screenTimeToday > 0)
-                    listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
-                else
-                    listViewElement.setPercentage(0);
+                if (screenTimeToday > 0) {
+                    //Relative percentage, find a more precise way to tell ?
+                    listViewElement.setPercentage(Math.round(((float) entry.getValue() / screenTimeToday) * 100));
+                }
                 listViewElement.setTimer(entry.getValue());
                 listViewElement.invalidate();
             } else {

@@ -72,7 +72,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // Delete DB
-                                //Log.d(, )
                                 getContext().deleteDatabase(DbManager.getDBName());
                             }
                         })

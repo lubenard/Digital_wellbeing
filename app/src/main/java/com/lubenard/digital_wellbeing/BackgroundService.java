@@ -70,10 +70,10 @@ public class BackgroundService extends IntentService {
            UsageStatsManager manager = (UsageStatsManager) getApplicationContext().getSystemService(USAGE_STATS_SERVICE);
             long time = System.currentTimeMillis();
             Log.d(TAG, "Request made bewteen " + milliseconds + " and " + time);
-            List<UsageStats> appList = manager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,
-                    milliseconds, time);
+            List<UsageStats> appList = manager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, milliseconds, time);
             if (appList != null && appList.size() > 0) {
                 for (UsageStats usageStats : appList) {
+                    //Log.d(TAG, usageStats.getPackageName() + " " + usageStats.getTotalTimeInForeground());
                     if (TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()) > 0) {
                         app_data.put(usageStats.getPackageName(), (int) TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()));
                         Log.d("BgService", "for " + usageStats.getPackageName() + " timeInMsForeground = " + usageStats.getTotalTimeInForeground());
