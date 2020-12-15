@@ -13,7 +13,7 @@ import androidx.preference.PreferenceManager;
 /**
  * Decide whether or not the app should launch the main Fragment or the permission Fragment
  */
-public class LaunchMainFragment extends AppCompatActivity {
+public class LauncherActivity extends AppCompatActivity {
 
     private void checkConfig() {
         SharedPreferences sharedPreferences =

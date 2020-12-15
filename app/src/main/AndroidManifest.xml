@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <!-- This Activity does nothing more than just loading the first Fragment, MainFragment-->
-        <activity android:name=".LaunchMainFragment">
+        <activity android:name=".LauncherActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

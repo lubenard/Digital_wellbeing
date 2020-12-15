@@ -228,16 +228,14 @@ public class DbManager extends SQLiteOpenHelper {
         HashMap<String, Integer> app_data = new HashMap<>();
 
         String [] columns = new String[]{appsTablePkgName, appTimeTableTimeSpent};
-        Cursor c = readableDB.query(viewAppsTables, columns, appTimeTableDate + "=?",
+        Cursor cursor = readableDB.query(viewAppsTables, columns, appTimeTableDate + "=?",
                 new String[]{date}, null, null, null);
 
-        Log.d("DB", "getAppStats: Cursor is " + c.moveToFirst() + " date is " + date);
-
-        while (c.moveToNext()) {
-            app_data.put(c.getString(c.getColumnIndex(appsTablePkgName)), c.getInt(c.getColumnIndex(appTimeTableTimeSpent)));
-            Log.d("DB", "getStatApp adding " + c.getString(c.getColumnIndex(appsTablePkgName)) + " and value " + c.getInt(c.getColumnIndex(appTimeTableTimeSpent)));
+        while (cursor.moveToNext()) {
+            app_data.put(cursor.getString(cursor.getColumnIndex(appsTablePkgName)), cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
+            Log.d("DB", "getStatApp adding " + cursor.getString(cursor.getColumnIndex(appsTablePkgName)) + " and value " + cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
         }
-        c.close();
+        cursor.close();
         getTableAsString(appsTable);
         getTableAsString(appTimeTable);
         return app_data;
@@ -273,5 +271,4 @@ public class DbManager extends SQLiteOpenHelper {
         if (writableDB != null) { writableDB.close();}
         if (readableDB != null) { readableDB.close();}
     }
-
 }

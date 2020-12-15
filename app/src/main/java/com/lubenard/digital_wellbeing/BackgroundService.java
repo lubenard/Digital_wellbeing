@@ -73,7 +73,8 @@ public class BackgroundService extends IntentService {
             List<UsageStats> appList = manager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, milliseconds, time);
             if (appList != null && appList.size() > 0) {
                 for (UsageStats usageStats : appList) {
-                    //Log.d(TAG, usageStats.getPackageName() + " " + usageStats.getTotalTimeInForeground());
+                    // usageStats.getTotalTimeInForeground() update every time app is put to onPause status.
+                    // usageStats.getTotalTimeInForeground() is not a real time counter.
                     if (TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()) > 0) {
                         app_data.put(usageStats.getPackageName(), (int) TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()));
                         Log.d("BgService", "for " + usageStats.getPackageName() + " timeInMsForeground = " + usageStats.getTotalTimeInForeground());

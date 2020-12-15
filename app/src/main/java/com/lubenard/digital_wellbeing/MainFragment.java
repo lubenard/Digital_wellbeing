@@ -57,6 +57,8 @@ public class MainFragment extends Fragment {
     LinearLayout mainLinearLayout;
 
     private static Intent bgService = null;
+    private DbManager dbManager;
+    String todayDate;
 
 
     HashMap<String, MainFragmentListview> listviewAppPkgHashMap = new HashMap<>();
@@ -216,13 +218,6 @@ public class MainFragment extends Fragment {
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        return inflater.inflate(R.layout.main_fragment, container, false);
-    }
-
     /**
      * Update the list of app under the main chart
      * @param app_data New datas to update with.
@@ -268,10 +263,27 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "OnResume: " + todayDate);
+        HashMap<String, Integer> test = dbManager.getAppStats(todayDate);
+        updateMainChartData(test);
+
+        for (Map.Entry<String, Integer> entry : test.entrySet()) {
+            Log.d(TAG, "OnResume" + entry.getKey() + " = " + entry.getValue());
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        return inflater.inflate(R.layout.main_fragment, container, false);
+    }
+
+    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        DbManager dbManager;
-        String todayDate;
 
         Log.d(TAG,"View is created");
 
@@ -296,7 +308,7 @@ public class MainFragment extends Fragment {
 
         // Create the app listview at first
         for (Map.Entry<String, Integer> entry : db_app_data.entrySet()) {
-            Log.d(TAG, entry.getKey() + " = " + entry.getValue());
+            Log.d(TAG, "OnViewCreated: " + entry.getKey() + " = " + entry.getValue());
             MainFragmentListview app = new MainFragmentListview(getContext());
             // Put all the element in the hashmap, avoiding recreating them
             listviewAppPkgHashMap.put(entry.getKey(), app);
