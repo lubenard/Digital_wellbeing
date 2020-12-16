@@ -57,17 +57,19 @@ public class PermissionsHandler extends Fragment {
         // TODO: Find a way to change to autodetect auth, so no need to click a second time on the button ?
         permissionButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (checkIfUsagePermissionGranted(getContext())) {
-                    MainFragment mainFragment = new MainFragment();
-                    getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(android.R.id.content, mainFragment, "findThisFragment")
-                        .addToBackStack(null)
-                        .commit();
-                } else {
-                    Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-                    startActivity(intent);
-                }
+                Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (checkIfUsagePermissionGranted(getContext())) {
+            MainFragment mainFragment = new MainFragment();
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(android.R.id.content, mainFragment, "findThisFragment").commit();
+        }
     }
 }
