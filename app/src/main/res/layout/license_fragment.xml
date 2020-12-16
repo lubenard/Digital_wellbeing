@@ -36,5 +36,12 @@
             style="@style/Text.Licence_Text"
             android:text="@string/license_mpandroidCharts_source"/>
 
+        <View
+            style="@style/Divider" />
+
+        <TextView
+            style="@style/Text.Licence_Title"
+            android:text="@string/origin_icon"/>
+
     </LinearLayout>
 </ScrollView>
