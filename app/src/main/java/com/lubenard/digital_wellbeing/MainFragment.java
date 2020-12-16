@@ -43,23 +43,16 @@ public class MainFragment extends Fragment {
 
     public static final String TAG = "MainFragment";
 
-    private PieChart mainPieChart;
-    private TextView mainTextViewScreenTime;
-
-    //This variable is in minutes
-    private int screenTimeToday;
-    private String mainTextViewScreenTimeText;
-
-    private HashMap<String, Integer> db_app_data;
-
-    private View mainFragmentView;
-
     LinearLayout mainLinearLayout;
+    private PieChart mainPieChart;
+    private TextView numberofUnlocksTextView;
 
     private static Intent bgService = null;
     private DbManager dbManager;
     String todayDate;
 
+    //This variable is in minutes
+    private int screenTimeToday;
 
     HashMap<String, MainFragmentListview> listviewAppPkgHashMap = new HashMap<>();
 
@@ -91,11 +84,10 @@ public class MainFragment extends Fragment {
     /**
      * Update the Time spent text
      */
+    @SuppressLint("DefaultLocale")
     public void updateTextViewScreenTime() {
-        @SuppressLint("DefaultLocale") String mainTextViewScreenTimeText = String.format("%s\n%d:%02d",
-                getResources().getString(R.string.main_textView_screen_time),
-                screenTimeToday / 60, screenTimeToday % 60);
-        mainTextViewScreenTime.setText(mainTextViewScreenTimeText);
+        mainPieChart.setCenterText(String.format("%s\n%d:%02d", getResources().getString(R.string.main_textView_screen_time),
+                screenTimeToday / 60, screenTimeToday % 60));
     }
 
     public String getAppName(String packageName) {
@@ -122,7 +114,7 @@ public class MainFragment extends Fragment {
             Log.d(TAG, "Data in HASHMAP UPDATE " + HMdata.getValue() +  " : " + HMdata.getKey());
         }
 
-        Log.d(TAG, "Update the values.");
+        Log.d(TAG, "Update the values on mainChart.");
 
         //X value : name of label
         //Y value : percentage of label
@@ -151,10 +143,11 @@ public class MainFragment extends Fragment {
         mainPieChart.setExtraOffsets(5, 0, 5, 10);
         mainPieChart.setDragDecelerationFrictionCoef(0.99f);
         mainPieChart.setDrawHoleEnabled(true);
-        //mainPieChart.setHoleColor(Color.WHITE);
+        mainPieChart.setHoleColor(Color.DKGRAY);
         mainPieChart.setTransparentCircleRadius(0);
         mainPieChart.getLegend().setEnabled(false);
-        mainPieChart.setCenterText("Apps");
+        mainPieChart.setCenterTextColor(Color.WHITE);
+        mainPieChart.setCenterText(getResources().getString(R.string.main_textView_screen_time) + String.format("\n%d:%02d", screenTimeToday / 60, screenTimeToday % 60));
         mainPieChart.setCenterTextSize(40);
         mainPieChart.setRotationEnabled(false);
     }
@@ -175,6 +168,102 @@ public class MainFragment extends Fragment {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Update the list of app under the main chart
+     * @param app_data New datas to update with.
+     */
+    public void updateListView(HashMap<String, Integer> app_data) {
+        MainFragmentListview listViewElement;
+        for (Map.Entry<String, Integer> entry : app_data.entrySet()) {
+            // Check if the listview element already exist
+            // If it does, no need to recreate one, only update it
+            if ((listViewElement = listviewAppPkgHashMap.get(entry.getKey())) != null) {
+                Log.d(TAG, "listview: Only need to update for " + entry.getKey());
+                listViewElement.setApp_name(getAppName(entry.getKey()));
+                if (screenTimeToday > 0) {
+                    //Relative percentage, find a more precise way to tell ?
+                    listViewElement.setPercentage(Math.round(((float) entry.getValue() / screenTimeToday) * 100));
+                }
+                listViewElement.setTimer(entry.getValue());
+                listViewElement.invalidate();
+            } else {
+                Log.d(TAG, "listview: View needed to be created for " + entry.getKey());
+                listViewElement = new MainFragmentListview(getContext());
+                listviewAppPkgHashMap.put(entry.getKey(), listViewElement);
+                listViewElement.setApp_name(getAppName(entry.getKey()));
+                if (screenTimeToday > 0)
+                    listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
+                else
+                    listViewElement.setPercentage(0);
+                listViewElement.setTimer(entry.getValue());
+                listViewElement.setIcon(getIconFromPkgName(entry.getKey()));
+                listViewElement.invalidate();
+                mainLinearLayout.addView(listViewElement);
+
+            }
+        }
+    }
+
+    private void updateNumberOfUnlocksTextView(int numberOfUnlocks) {
+        numberofUnlocksTextView.setText(getResources().getString(R.string.number_of_unlocks_textview) + " " + numberOfUnlocks);
+    }
+
+    public static void setBgService(Intent newBgService) {
+        bgService = newBgService;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        return inflater.inflate(R.layout.main_fragment, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Log.d(TAG,"View is created");
+
+        getActivity().setTitle(R.string.app_name);
+
+        mainLinearLayout = view.findViewById(R.id.main_linear_layout);
+        mainPieChart = view.findViewById(R.id.main_chart);
+        numberofUnlocksTextView = view.findViewById(R.id.numberOfUnlocksTextView);
+
+        setupMainChart();
+
+        todayDate = BackgroundService.getTodayDate();
+
+        dbManager = new DbManager(getContext());
+
+        Log.d(TAG, "screenTimeToday is " + screenTimeToday);
+
+        setHasOptionsMenu(true);
+
+        // Handle the Handler send every minute to update datas and charts
+        Handler handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                Log.d(TAG, "MESSAGE RECEIVED");
+                Bundle reply = msg.getData();
+                if (reply.containsKey("updateScreenTime"))
+                    updateScreenTime(reply.getInt("updateScreenTime"));
+                if (reply.containsKey("updateStatsApps"))
+                    updateStats((HashMap<String, Integer>) reply.getSerializable("updateStatsApps"));
+                if (reply.containsKey("numberOfUnlocks"))
+                    updateNumberOfUnlocksTextView(reply.getInt("numberOfUnlocks"));
+            }
+        };
+
+        // No need to relaunch a service if it has already been started by AutoStart
+        if (bgService == null) {
+            setBgService(new Intent(MainFragment.this.getActivity(), BackgroundService.class));
+            bgService.putExtra("messenger", new Messenger(handler));
+        }
+        getContext().startService(bgService);
     }
 
     /**
@@ -218,127 +307,13 @@ public class MainFragment extends Fragment {
         }
     }
 
-    /**
-     * Update the list of app under the main chart
-     * @param app_data New datas to update with.
-     */
-    public void updateListView(HashMap<String, Integer> app_data) {
-        MainFragmentListview listViewElement;
-        for (Map.Entry<String, Integer> entry : app_data.entrySet()) {
-            // Check if the listview element already exist
-            // If it does, no need to recreate one, only update it
-            if ((listViewElement = listviewAppPkgHashMap.get(entry.getKey())) != null) {
-                Log.d(TAG, "listview: Only need to update for " + entry.getKey());
-                listViewElement.setApp_name(getAppName(entry.getKey()));
-                if (screenTimeToday > 0) {
-                    //Relative percentage, find a more precise way to tell ?
-                    listViewElement.setPercentage(Math.round(((float) entry.getValue() / screenTimeToday) * 100));
-                }
-                listViewElement.setTimer(entry.getValue());
-                listViewElement.invalidate();
-            } else {
-                Log.d(TAG, "listview: View needed to be created for " + entry.getKey());
-                listViewElement = new MainFragmentListview(getContext());
-                listviewAppPkgHashMap.put(entry.getKey(), listViewElement);
-                listViewElement.setApp_name(getAppName(entry.getKey()));
-                if (screenTimeToday > 0)
-                    listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
-                else
-                    listViewElement.setPercentage(0);
-                listViewElement.setTimer(entry.getValue());
-                listViewElement.setIcon(getIconFromPkgName(entry.getKey()));
-                listViewElement.invalidate();
-                mainLinearLayout.addView(listViewElement);
-
-            }
-        }
-    }
-
-    public static Intent getBgService() {
-        return bgService;
-    }
-
-    public static void setBgService(Intent newBgService) {
-        bgService = newBgService;
-    }
-
     @Override
     public void onResume() {
         super.onResume();
         Log.d(TAG, "OnResume: " + todayDate);
-        HashMap<String, Integer> test = dbManager.getAppStats(todayDate);
-        updateMainChartData(test);
-
-        for (Map.Entry<String, Integer> entry : test.entrySet()) {
-            Log.d(TAG, "OnResume" + entry.getKey() + " = " + entry.getValue());
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        return inflater.inflate(R.layout.main_fragment, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        Log.d(TAG,"View is created");
-
-        getActivity().setTitle(R.string.app_name);
-
-        mainFragmentView = view;
-        mainLinearLayout = mainFragmentView.findViewById(R.id.main_linear_layout);
-        mainPieChart = view.findViewById(R.id.main_chart);
-        mainTextViewScreenTime = view.findViewById(R.id.main_textView_screnTime);
-
-        setupMainChart();
-
-        todayDate = BackgroundService.getTodayDate();
-
-        dbManager = new DbManager(getContext());
-
-        db_app_data = dbManager.getAppStats(todayDate);
 
         updateScreenTime(dbManager.getScreenTime(todayDate));
-        //updateStats(db_app_data);
-        Log.d(TAG, "screenTimeToday is " + screenTimeToday);
-
-        // Create the app listview at first
-        for (Map.Entry<String, Integer> entry : db_app_data.entrySet()) {
-            Log.d(TAG, "OnViewCreated: " + entry.getKey() + " = " + entry.getValue());
-            MainFragmentListview app = new MainFragmentListview(getContext());
-            // Put all the element in the hashmap, avoiding recreating them
-            listviewAppPkgHashMap.put(entry.getKey(), app);
-            app.setApp_name(entry.getKey());
-            app.setPercentage((entry.getValue() / screenTimeToday) * 100);
-            app.setTimer(entry.getValue());
-            app.setIcon(getIconFromPkgName(entry.getKey()));
-            mainLinearLayout.addView(app);
-        }
-
-        setHasOptionsMenu(true);
-
-        // Handle the Handler send every minute to update datas and charts
-        Handler handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                Log.d(TAG, "MESSAGE RECEIVED");
-                Bundle reply = msg.getData();
-                updateScreenTime(reply.getInt("updateScreenTime"));
-                updateStats((HashMap<String, Integer>) reply.getSerializable("updateStatsApps"));
-            }
-        };
-
-        updateTextViewScreenTime();
-
-        // No need to relaunch a service if it has already been started by AutoStart
-        if (bgService == null) {
-            setBgService(new Intent(MainFragment.this.getActivity(), BackgroundService.class));
-            bgService.putExtra("updateScreenTime", new Messenger(handler));
-        }
-        getContext().startService(bgService);
+        updateStats(dbManager.getAppStats(todayDate));
+        updateNumberOfUnlocksTextView(BackgroundService.getNumberOfUnlocks());
     }
 }

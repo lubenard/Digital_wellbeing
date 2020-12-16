@@ -35,15 +35,43 @@ public class BackgroundService extends IntentService {
     private static String todayDate;
     // This variable is in seconds
     private static short mTimer = 0;
+
     //This variable is in Minutes
     private short screenTimeToday = 0;
     private HashMap<String, Integer> app_data;
+    private static int numberOfUnlocks = 0;
+    private static Intent gIntent;
 
     /**
      * Constructor of the class
      */
     public BackgroundService() {
         super("Launch");
+    }
+
+    public static void increaseNumberOfUnlocks() {
+        numberOfUnlocks++;
+        Log.d(TAG, "Number of unlocking increased : now -> " + numberOfUnlocks);
+        sendNumberOfUnlockToUI();
+    }
+
+    private static void sendNumberOfUnlockToUI() {
+        Bundle bundle = gIntent.getExtras();
+        if (bundle != null) {
+            bundle.putInt("numberOfUnlocks", numberOfUnlocks);
+            Messenger messenger = (Messenger) bundle.get("messenger");
+            Message msg = Message.obtain();
+            msg.setData(bundle);
+            try {
+                messenger.send(msg);
+            } catch (RemoteException e) {
+                Log.e(TAG, "There was an error when sending the datas to main UI");
+            }
+        }
+    }
+
+    public static int getNumberOfUnlocks() {
+        return numberOfUnlocks;
     }
 
     /**
@@ -87,27 +115,21 @@ public class BackgroundService extends IntentService {
 
     /**
      * When called, send data with time spent + app usage to main UI to refresh stats and graphs
-     * @param intent The intent to send data to
      * @param screenTimeToSend The screen time (in minutes) to send to UI
      * @param app_data The app data (App Name + Time spent on in minutes) to send to UI
      */
-    private void sendDataToMainUi(Intent intent, short screenTimeToSend, HashMap<String,Integer> app_data)
-    {
-        Bundle bundle = intent.getExtras();
-        Bundle dataReturn = intent.getExtras();
-        if (dataReturn != null) {
-            dataReturn.putSerializable("updateStatsApps", app_data);
-            dataReturn.putSerializable("updateStatsApps", app_data);
-            dataReturn.putInt("updateScreenTime", screenTimeToSend);
-            if (bundle != null) {
-                Messenger messenger = (Messenger) bundle.get("updateScreenTime");
-                Message msg = Message.obtain();
-                msg.setData(dataReturn);
-                try {
-                    messenger.send(msg);
-                } catch (RemoteException e) {
-                    Log.i(TAG, "There was an error when sending the datas to main UI");
-                }
+    private void sendDataToMainUi(short screenTimeToSend, HashMap<String,Integer> app_data) {
+        Bundle bundle = gIntent.getExtras();
+        if (bundle != null) {
+            bundle.putSerializable("updateStatsApps", app_data);
+            bundle.putInt("updateScreenTime", screenTimeToSend);
+            Messenger messenger = (Messenger) bundle.get("messenger");
+            Message msg = Message.obtain();
+            msg.setData(bundle);
+            try {
+                messenger.send(msg);
+            } catch (RemoteException e) {
+                Log.e(TAG, "There was an error when sending the datas to main UI");
             }
         }
     }
@@ -149,6 +171,7 @@ public class BackgroundService extends IntentService {
         dbManager = new DbManager(getApplicationContext());
 
         screenTimeToday = dbManager.getScreenTime(todayDate);
+        gIntent = intent;
 
         // Launch Broadcast Receiver for screen time
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
@@ -157,12 +180,12 @@ public class BackgroundService extends IntentService {
         registerReceiver(mReceiver, filter);
 
         getLaunchedApps();
-        sendDataToMainUi(intent, screenTimeToday, app_data);
+        sendDataToMainUi(screenTimeToday, app_data);
 
         // Main loop. This loop register if the screen is on which apps are launched.
         while (true)
         {
-            Log.d("BgService", "Service is up and running, screen is " + ScreenReceiver.wasScreenOn + " mTimer vaut " + mTimer);
+            Log.d("BgService", "Service is up and running, screen is " + ScreenReceiver.isScreenOn + " mTimer vaut " + mTimer);
             try {
                 if (mTimer == 60) {
                     // Every minute, update DB + refresh data on main UI
@@ -170,9 +193,10 @@ public class BackgroundService extends IntentService {
                     screenTimeToday++;
                     dbManager.updateScreenTime(screenTimeToday, todayDate);
                     dbManager.updateAppData(app_data, todayDate);
-                    sendDataToMainUi(intent, screenTimeToday, app_data);
+                    dbManager.updateUnlocks(numberOfUnlocks, todayDate);
+                    sendDataToMainUi(screenTimeToday, app_data);
                     mTimer = 0;
-                } else if (ScreenReceiver.wasScreenOn) {
+                } else if (ScreenReceiver.isScreenOn) {
                     // Else, increase timer
                     getLaunchedApps();
                     mTimer++;

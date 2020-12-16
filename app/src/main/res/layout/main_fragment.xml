@@ -16,18 +16,22 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/main_textView_screnTime"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:textSize="40sp"
-                android:gravity="center"/>
-
             <com.github.mikephil.charting.charts.PieChart
                 android:id="@+id/main_chart"
                 android:layout_width="match_parent"
+                android:layout_marginTop="30dp"
                 android:layout_height="400dp"
-                android:layout_weight="1" />
+                android:layout_weight="1" >
+            </com.github.mikephil.charting.charts.PieChart>
+
+            <TextView
+                android:id="@+id/numberOfUnlocksTextView"
+                android:background="@drawable/rounded_corner"
+                android:layout_width="match_parent"
+                android:padding="10dp"
+                android:layout_margin="10dp"
+                android:layout_height="wrap_content"
+                android:text="@string/number_of_unlocks_textview" />
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

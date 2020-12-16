@@ -12,18 +12,18 @@ import android.util.Log;
 public class ScreenReceiver extends BroadcastReceiver {
 
     // That code is coming from https://thinkandroid.wordpress.com/2010/01/24/handling-screen-off-and-screen-on-intents/
-    public static boolean wasScreenOn = true;
+    public static boolean isScreenOn = true;
     public static final String TAG = "ScreenReceiver";
-
 
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-            wasScreenOn = false;
+            isScreenOn = false;
             Log.d(TAG, "Screen is off");
         } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
-            wasScreenOn = true;
+            isScreenOn = true;
             Log.d(TAG, "Screen is on");
+            BackgroundService.increaseNumberOfUnlocks();
         }
     }
 }

@@ -25,6 +25,11 @@ public class DbManager extends SQLiteOpenHelper {
     static final String screenTimeTableDate = "date";
     static final String screenTimeTableScreenTime = "screenTime";
 
+    // number of unlock table
+    static final String unlockTable = "unlocks";
+    static final String unlockTableDate = "date";
+    static final String unlockTableUnlockNbr = "unlockNbr";
+
     // appTime table
     static final String appTimeTable = "appTime";
     static final String appTimeTableDate = "date";
@@ -60,6 +65,8 @@ public class DbManager extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // Create screenTime table
         db.execSQL("CREATE TABLE " + screenTimeTable + " (" + screenTimeTableDate + " DATE PRIMARY KEY, " + screenTimeTableScreenTime + " INTEGER)");
+
+        db.execSQL("CREATE TABLE " + unlockTable + " (" + unlockTableDate + " DATE PRIMARY KEY, " + unlockTableUnlockNbr + " INTEGER)");
 
         // Create appTime table
         db.execSQL("CREATE TABLE " + appTimeTable + " (" + appTimeTableAppId + " INTEGER, " + appTimeTableDate + " DATE, " + appTimeTableTimeSpent + " INTEGER, " +
@@ -135,38 +142,104 @@ public class DbManager extends SQLiteOpenHelper {
     }
 
     /**
+     * Get the screen time for a specific date
+     * @param date date to which you want to get the datas
+     * @return The screen time fetched from the DB
+     */
+    public short getScreenTime(String date) {
+        short value = 0;
+
+        String [] columns = new String[]{screenTimeTableScreenTime};
+        Cursor c = readableDB.query(screenTimeTable, columns, screenTimeTableDate + "=?",
+                new String[]{date}, null, null, null);
+
+        if (c.moveToFirst())
+            value = c.getShort(0);
+        else
+            getTableAsString(screenTimeTable);
+        c.close();
+
+        return value;
+    }
+
+    /**
      * Create a Screen Time only if non existent:
      * Example: Past midnight, this is a new day, no entry exist in the db for that day
+     * @param newScreenTime new screen time
+     * @param
      */
-    public void updateScreenTime(int addTime, String date) {
+    public void updateScreenTime(int newScreenTime, String date) {
         ContentValues cv = new ContentValues();
-        cv.put(screenTimeTableScreenTime, addTime);
+        cv.put(screenTimeTableScreenTime, newScreenTime);
 
-        Log.d(TAG, "updateScreenTime: update with new value (time = " + addTime + ") for date = " + date);
+        Log.d(TAG, "updateScreenTime: update with new value (time = " + newScreenTime + ") for date = " + date);
         int u = writableDB.update(screenTimeTable, cv, screenTimeTableDate + "=?", new String []{date});
         if (u == 0) {
-            Log.d(TAG, "updateScreenTime: update does not seems to work, insert data: (time = " + addTime + ") for date = " + date);
+            Log.d(TAG, "updateScreenTime: update does not seems to work, insert data: (time = " + newScreenTime + ") for date = " + date);
             cv.put(screenTimeTableDate, date);
             writableDB.insertWithOnConflict(screenTimeTable, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
         }
     }
 
     /**
-     * Get the id from the appsTable table with specified app package
-     * @param pkgName Package name
-     * @return The id of that package name in the table
+     * Get the number of unlocks for a specific date
+     * @param date date to which you want to get the datas
+     * @return The number of unlocks is fetched from the DB
      */
-    public int getIdFromPkgName(String pkgName)
-    {
-        int value;
-        String[] columns = new String[]{appsTableId};
-        Cursor c = readableDB.query(appsTable, columns, appsTablePkgName + "=?",
-                new String[]{pkgName}, null, null, null);
+    public short getUnlocks(String date) {
+        short value = 0;
+
+        String [] columns = new String[]{unlockTableUnlockNbr};
+        Cursor c = readableDB.query(unlockTable, columns, unlockTableDate + "=?",
+                new String[]{date}, null, null, null);
+
         if (c.moveToFirst())
-            value = c.getInt(0);
+            value = c.getShort(0);
         else
-            value = -1;
+            getTableAsString(unlockTable);
+        c.close();
+
         return value;
+    }
+
+    /**
+     * Update the number of unlocks in the db for the given date
+     * @param newUnlockNbr new unlock number
+     * @param date which date to insert ?
+     */
+    public void updateUnlocks(int newUnlockNbr, String date) {
+        ContentValues cv = new ContentValues();
+        cv.put(unlockTableUnlockNbr, newUnlockNbr);
+
+        Log.d(TAG, "updateScreenTime: update with new value (time = " + newUnlockNbr + ") for date = " + date);
+        int u = writableDB.update(unlockTable, cv, unlockTableDate + "=?", new String []{date});
+        if (u == 0) {
+            Log.d(TAG, "unlockNbr: update does not seems to work, insert data: (time = " + newUnlockNbr + ") for date = " + date);
+            cv.put(unlockTableDate, date);
+            writableDB.insertWithOnConflict(unlockTable, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+    }
+
+    /**
+     * Get the app datas for a specific date
+     * @param date date to which you want to get the datas
+     * @return The datas fetched from the DB
+     */
+    public HashMap<String, Integer> getAppStats(String date) {
+        HashMap<String, Integer> app_data = new HashMap<>();
+
+        String [] columns = new String[]{appsTablePkgName, appTimeTableTimeSpent};
+        Cursor cursor = readableDB.query(viewAppsTables, columns, appTimeTableDate + "=?",
+                new String[]{date}, null, null, null);
+
+        while (cursor.moveToNext()) {
+            app_data.put(cursor.getString(cursor.getColumnIndex(appsTablePkgName)), cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
+            Log.d("DB", "getStatApp adding " + cursor.getString(cursor.getColumnIndex(appsTablePkgName)) + " and value " + cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
+        }
+        cursor.close();
+        getTableAsString(appsTable);
+        getTableAsString(appTimeTable);
+        return app_data;
     }
 
     /**
@@ -199,6 +272,24 @@ public class DbManager extends SQLiteOpenHelper {
     }
 
     /**
+     * Get the id from the appsTable table with specified app package
+     * @param pkgName Package name
+     * @return The id of that package name in the table
+     */
+    public int getIdFromPkgName(String pkgName)
+    {
+        int value;
+        String[] columns = new String[]{appsTableId};
+        Cursor c = readableDB.query(appsTable, columns, appsTablePkgName + "=?",
+                new String[]{pkgName}, null, null, null);
+        if (c.moveToFirst())
+            value = c.getInt(0);
+        else
+            value = -1;
+        return value;
+    }
+
+    /**
      * Use this function for testing. Print all the content of a given table
      * @param tableName Table name to print
      */
@@ -217,51 +308,6 @@ public class DbManager extends SQLiteOpenHelper {
 
             } while (allRows.moveToNext());
         }
-    }
-
-    /**
-     * Get the app datas for a specific date
-     * @param date date to which you want to get the datas
-     * @return The datas fetched from the DB
-     */
-    public HashMap<String, Integer> getAppStats(String date) {
-        HashMap<String, Integer> app_data = new HashMap<>();
-
-        String [] columns = new String[]{appsTablePkgName, appTimeTableTimeSpent};
-        Cursor cursor = readableDB.query(viewAppsTables, columns, appTimeTableDate + "=?",
-                new String[]{date}, null, null, null);
-
-        while (cursor.moveToNext()) {
-            app_data.put(cursor.getString(cursor.getColumnIndex(appsTablePkgName)), cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
-            Log.d("DB", "getStatApp adding " + cursor.getString(cursor.getColumnIndex(appsTablePkgName)) + " and value " + cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
-        }
-        cursor.close();
-        getTableAsString(appsTable);
-        getTableAsString(appTimeTable);
-        return app_data;
-    }
-
-    /**
-     * Get the screen time for a specific date
-     * @param date date to which you want to get the datas
-     * @return The screen time fetched from the DB
-     */
-    public short getScreenTime(String date) {
-        short value = 0;
-
-        String [] columns = new String[]{screenTimeTableScreenTime};
-        Cursor c = readableDB.query(screenTimeTable, columns, screenTimeTableDate + "=?",
-                new String[]{date}, null, null, null);
-
-        Log.d("DB", "Cursor is " + c.moveToFirst() + " date is " + date);
-
-        if (c.moveToFirst())
-            value = c.getShort(0);
-        else
-            getTableAsString(screenTimeTable);
-        c.close();
-
-        return value;
     }
 
     /**
