@@ -31,7 +31,7 @@ public class BackgroundService extends IntentService {
 
     BroadcastReceiver mReceiver;
 
-    private DbManager dbManager;
+    private static DbManager dbManager;
     private static String todayDate;
     // This variable is in seconds
     private static short mTimer = 0;
@@ -52,6 +52,7 @@ public class BackgroundService extends IntentService {
     public static void increaseNumberOfUnlocks() {
         numberOfUnlocks++;
         Log.d(TAG, "Number of unlocking increased : now -> " + numberOfUnlocks);
+        dbManager.updateUnlocks(numberOfUnlocks, todayDate);
         sendNumberOfUnlockToUI();
     }
 
@@ -182,6 +183,7 @@ public class BackgroundService extends IntentService {
         registerReceiver(mReceiver, filter);
 
         getLaunchedApps();
+        sendNumberOfUnlockToUI();
         sendDataToMainUi(screenTimeToday, app_data);
 
         // Main loop. This loop register if the screen is on which apps are launched.
@@ -214,6 +216,7 @@ public class BackgroundService extends IntentService {
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "OnDestroy is called");
         if (dbManager != null){
             //dbManager.closeDb();
             Log.i(TAG,"mDBHelper.close() in " + this.getClass());
