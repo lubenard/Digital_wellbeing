@@ -2,7 +2,7 @@
 
     <!--Main fragment-->
     <string name="main_pie_chart_label">Apps</string>
-    <string name="main_textView_screen_time">Aujourd\'hui</string>
+    <string name="main_textView_screen_time">Aujourd\'hui:</string>
 
     <!--License fragment-->
 

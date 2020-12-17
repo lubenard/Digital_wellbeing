@@ -20,7 +20,7 @@ public class LauncherActivity extends AppCompatActivity {
                 PreferenceManager.getDefaultSharedPreferences(this);
 
         // Create notification if needed
-        Boolean permanent_notification_option = sharedPreferences.getBoolean("tweaks_permanent_notification", true);
+        Boolean permanent_notification_option = sharedPreferences.getBoolean("tweaks_permanent_notification", false);
         if (permanent_notification_option)
             new NotificationsHandler().createPermanentNotification(this);
 

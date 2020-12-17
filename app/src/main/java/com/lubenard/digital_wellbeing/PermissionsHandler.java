@@ -53,8 +53,6 @@ public class PermissionsHandler extends Fragment {
 
         Button permissionButton = view.findViewById(R.id.permission_button);
 
-        // I do not like the idea of having to check twice for authorisation (one at launch + one here)
-        // TODO: Find a way to change to autodetect auth, so no need to click a second time on the button ?
         permissionButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);

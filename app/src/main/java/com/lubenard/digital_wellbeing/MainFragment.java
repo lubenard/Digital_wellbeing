@@ -1,6 +1,7 @@
 package com.lubenard.digital_wellbeing;
 
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -148,7 +149,7 @@ public class MainFragment extends Fragment {
         mainPieChart.getLegend().setEnabled(false);
         mainPieChart.setCenterTextColor(Color.WHITE);
         mainPieChart.setCenterText(getResources().getString(R.string.main_textView_screen_time) + String.format("\n%d:%02d", screenTimeToday / 60, screenTimeToday % 60));
-        mainPieChart.setCenterTextSize(40);
+        mainPieChart.setCenterTextSize(35);
         mainPieChart.setRotationEnabled(false);
     }
 

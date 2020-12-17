@@ -171,6 +171,8 @@ public class BackgroundService extends IntentService {
         dbManager = new DbManager(getApplicationContext());
 
         screenTimeToday = dbManager.getScreenTime(todayDate);
+        numberOfUnlocks = dbManager.getUnlocks(todayDate);
+
         gIntent = intent;
 
         // Launch Broadcast Receiver for screen time
@@ -216,6 +218,9 @@ public class BackgroundService extends IntentService {
             //dbManager.closeDb();
             Log.i(TAG,"mDBHelper.close() in " + this.getClass());
         }
+        dbManager.updateScreenTime(screenTimeToday, todayDate);
+        dbManager.updateAppData(app_data, todayDate);
+        dbManager.updateUnlocks(numberOfUnlocks, todayDate);
         unregisterReceiver(mReceiver);
         super.onDestroy();
     }

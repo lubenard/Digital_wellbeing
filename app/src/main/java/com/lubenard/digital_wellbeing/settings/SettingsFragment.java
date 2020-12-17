@@ -13,6 +13,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 
 import com.lubenard.digital_wellbeing.BackgroundService;
 import com.lubenard.digital_wellbeing.DbManager;
