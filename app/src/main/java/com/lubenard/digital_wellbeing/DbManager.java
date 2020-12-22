@@ -16,7 +16,7 @@ import java.util.HashMap;
  */
 public class DbManager extends SQLiteOpenHelper {
 
-    public static final String TAG = "DB";
+    public static final String TAG = "DBManager";
 
     static final String dbName = "dataDB";
 
@@ -85,7 +85,7 @@ public class DbManager extends SQLiteOpenHelper {
                 " ON " + appTimeTable + "." + appTimeTableAppId + " = " + appsTable + "." + appsTableId
         );
 
-        Log.d("DB", "The db has been created, this message should only appear once.");
+        Log.d(TAG, "The db has been created, this message should only appear once.");
     }
 
     public static String getDBName() {
@@ -147,6 +147,7 @@ public class DbManager extends SQLiteOpenHelper {
      * @return The screen time fetched from the DB
      */
     public short getScreenTime(String date) {
+        Log.d(TAG, "getScreenTime request made for date: " + date);
         short value = 0;
 
         String [] columns = new String[]{screenTimeTableScreenTime};
@@ -155,8 +156,6 @@ public class DbManager extends SQLiteOpenHelper {
 
         if (c.moveToFirst())
             value = c.getShort(0);
-        else
-            getTableAsString(screenTimeTable);
         c.close();
 
         return value;
@@ -187,6 +186,7 @@ public class DbManager extends SQLiteOpenHelper {
      * @return The number of unlocks is fetched from the DB
      */
     public short getUnlocks(String date) {
+        Log.d(TAG, "getUnlocks request made for date: " + date);
         short value = 0;
 
         String [] columns = new String[]{unlockTableUnlockNbr};
@@ -195,8 +195,6 @@ public class DbManager extends SQLiteOpenHelper {
 
         if (c.moveToFirst())
             value = c.getShort(0);
-        else
-            getTableAsString(unlockTable);
         c.close();
 
         return value;
@@ -226,6 +224,7 @@ public class DbManager extends SQLiteOpenHelper {
      * @return The datas fetched from the DB
      */
     public HashMap<String, Integer> getAppStats(String date) {
+        Log.d(TAG, "getAppStats request made for date: " + date);
         HashMap<String, Integer> app_data = new HashMap<>();
 
         String [] columns = new String[]{appsTablePkgName, appTimeTableTimeSpent};
@@ -234,11 +233,9 @@ public class DbManager extends SQLiteOpenHelper {
 
         while (cursor.moveToNext()) {
             app_data.put(cursor.getString(cursor.getColumnIndex(appsTablePkgName)), cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
-            Log.d("DB", "getStatApp adding " + cursor.getString(cursor.getColumnIndex(appsTablePkgName)) + " and value " + cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
+            Log.d(TAG, "getStatApp adding " + cursor.getString(cursor.getColumnIndex(appsTablePkgName)) + " and value " + cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
         }
         cursor.close();
-        getTableAsString(appsTable);
-        getTableAsString(appTimeTable);
         return app_data;
     }
 
@@ -294,17 +291,17 @@ public class DbManager extends SQLiteOpenHelper {
      * @param tableName Table name to print
      */
     public void getTableAsString(String tableName) {
-        Log.d("DB", "getTableAsString called for " + tableName);
-        Log.d("DB", String.format("Table %s:\n", tableName));
+        Log.d(TAG, "getTableAsString called for " + tableName);
+        Log.d(TAG, String.format("Table %s:\n", tableName));
         Cursor allRows  = readableDB.rawQuery("SELECT * FROM " + tableName, null);
         if (allRows.moveToFirst() ){
             String[] columnNames = allRows.getColumnNames();
             do {
                 for (String name: columnNames) {
-                    Log.d("DB", String.format("%s: %s\n", name,
+                    Log.d(TAG, String.format("%s: %s\n", name,
                             allRows.getString(allRows.getColumnIndex(name))));
                 }
-                Log.d("DB","\n");
+                Log.d(TAG,"\n");
 
             } while (allRows.moveToNext());
         }

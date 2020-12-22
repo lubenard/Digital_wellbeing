@@ -1,14 +1,12 @@
 package com.lubenard.digital_wellbeing;
 
 import androidx.fragment.app.Fragment;
-import androidx.preference.PreferenceManager;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -91,17 +89,6 @@ public class MainFragment extends Fragment {
                 screenTimeToday / 60, screenTimeToday % 60));
     }
 
-    public String getAppName(String packageName) {
-        final PackageManager pm = getContext().getPackageManager();
-        ApplicationInfo ai;
-        try {
-            ai = pm.getApplicationInfo(packageName, 0);
-        } catch (final PackageManager.NameNotFoundException e) {
-            ai = null;
-        }
-        return (String) (ai != null ? pm.getApplicationLabel(ai) : "(unknown)");
-    }
-
     /**
      * Update the main Pie chart datas
      * @param app_data new app datas
@@ -111,7 +98,7 @@ public class MainFragment extends Fragment {
 
         for (HashMap.Entry<String, Integer> HMdata : app_data.entrySet()) {
             // turn your data into Entry objects
-            entries.add(new PieEntry(HMdata.getValue(), getAppName(HMdata.getKey())));
+            entries.add(new PieEntry(HMdata.getValue(), Utils.getAppName(getContext(), HMdata.getKey())));
             Log.d(TAG, "Data in HASHMAP UPDATE " + HMdata.getValue() +  " : " + HMdata.getKey());
         }
 
@@ -154,35 +141,17 @@ public class MainFragment extends Fragment {
     }
 
     /**
-     * Get icon from package name
-     * @param packageName Example 'com.facebook.messenger'
-     * @return The drawable if found, or null if not
-     */
-    private Drawable getIconFromPkgName(String packageName) {
-        Log.d(TAG,"GetIconFromPKG: "+ packageName);
-        try {
-            return getContext().getPackageManager().getApplicationIcon(packageName);
-        }
-        catch (PackageManager.NameNotFoundException e)
-        {
-            Log.d(TAG, "icon for " + packageName + " not found");
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
      * Update the list of app under the main chart
      * @param app_data New datas to update with.
      */
     public void updateListView(HashMap<String, Integer> app_data) {
         MainFragmentListview listViewElement;
-        for (Map.Entry<String, Integer> entry : app_data.entrySet()) {
+        for (final Map.Entry<String, Integer> entry : app_data.entrySet()) {
             // Check if the listview element already exist
             // If it does, no need to recreate one, only update it
             if ((listViewElement = listviewAppPkgHashMap.get(entry.getKey())) != null) {
                 Log.d(TAG, "listview: Only need to update for " + entry.getKey());
-                listViewElement.setApp_name(getAppName(entry.getKey()));
+                listViewElement.setApp_name(Utils.getAppName(getContext(), entry.getKey()));
                 if (screenTimeToday > 0) {
                     //Relative percentage, find a more precise way to tell ?
                     listViewElement.setPercentage(Math.round(((float) entry.getValue() / screenTimeToday) * 100));
@@ -193,14 +162,26 @@ public class MainFragment extends Fragment {
                 Log.d(TAG, "listview: View needed to be created for " + entry.getKey());
                 listViewElement = new MainFragmentListview(getContext());
                 listviewAppPkgHashMap.put(entry.getKey(), listViewElement);
-                listViewElement.setApp_name(getAppName(entry.getKey()));
+                listViewElement.setApp_name(Utils.getAppName(getContext(), entry.getKey()));
                 if (screenTimeToday > 0)
                     listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
                 else
                     listViewElement.setPercentage(0);
                 listViewElement.setTimer(entry.getValue());
-                listViewElement.setIcon(getIconFromPkgName(entry.getKey()));
+                listViewElement.setIcon(Utils.getIconFromPkgName(getContext(), entry.getKey()));
                 listViewElement.invalidate();
+                listViewElement.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        AppDetail fragment = new AppDetail();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("app_pkg", entry.getKey());
+                        fragment.setArguments(bundle);
+                        getActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(android.R.id.content, fragment, null)
+                                .addToBackStack(null).commit();
+                    }
+                });
                 mainLinearLayout.addView(listViewElement);
 
             }
@@ -292,16 +273,14 @@ public class MainFragment extends Fragment {
                 SettingsFragment settingsFrag = new SettingsFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(android.R.id.content, settingsFrag, "findThisFragment")
-                        .addToBackStack(null)
-                        .commit();
+                        .addToBackStack(null).commit();
                 return true;
             case R.id.action_licences:
                 //Launch about page
                 AboutFragment aboutFrag = new AboutFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(android.R.id.content, aboutFrag, "findThisFragment")
-                        .addToBackStack(null)
-                        .commit();
+                        .addToBackStack(null).commit();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -316,5 +295,12 @@ public class MainFragment extends Fragment {
         updateScreenTime(dbManager.getScreenTime(todayDate));
         updateStats(dbManager.getAppStats(todayDate));
         updateNumberOfUnlocksTextView(BackgroundService.getNumberOfUnlocks());
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "OnPause: listView is destroyed");
+        listviewAppPkgHashMap.clear();
     }
 }

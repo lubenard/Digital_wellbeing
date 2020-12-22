@@ -35,8 +35,7 @@ public class AboutFragment extends Fragment {
                 LicenseFragment aboutFrag = new LicenseFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(android.R.id.content, aboutFrag, "findThisFragment")
-                        .addToBackStack(null)
-                        .commit();
+                        .addToBackStack(null).commit();
             }
         });
     }

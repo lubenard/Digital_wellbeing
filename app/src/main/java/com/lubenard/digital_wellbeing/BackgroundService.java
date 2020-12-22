@@ -78,10 +78,9 @@ public class BackgroundService extends IntentService {
     /**
      * Get the apps launched daily and they're usage time
      */
-    private void getLaunchedApps()
-    {
+    private void getLaunchedApps() {
         //This map contains the app_name (unique), and the time in minutes
-         app_data = new HashMap<String, Integer>();
+        app_data = new HashMap<String, Integer>();
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             String string_date = getTodayDate();
@@ -96,7 +95,7 @@ public class BackgroundService extends IntentService {
                 e.printStackTrace();
             }
 
-           UsageStatsManager manager = (UsageStatsManager) getApplicationContext().getSystemService(USAGE_STATS_SERVICE);
+            UsageStatsManager manager = (UsageStatsManager) getApplicationContext().getSystemService(USAGE_STATS_SERVICE);
             long time = System.currentTimeMillis();
             Log.d(TAG, "Request made bewteen " + milliseconds + " and " + time);
             List<UsageStats> appList = manager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, milliseconds, time);
@@ -106,7 +105,7 @@ public class BackgroundService extends IntentService {
                     // usageStats.getTotalTimeInForeground() is not a real time counter.
                     if (TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()) > 0) {
                         app_data.put(usageStats.getPackageName(), (int) TimeUnit.MILLISECONDS.toMinutes(usageStats.getTotalTimeInForeground()));
-                        Log.d("BgService", "for " + usageStats.getPackageName() + " timeInMsForeground = " + usageStats.getTotalTimeInForeground());
+                        Log.d(TAG, "for " + usageStats.getPackageName() + " timeInMsForeground = " + usageStats.getTotalTimeInForeground());
                     }
                 }
             }
@@ -150,10 +149,9 @@ public class BackgroundService extends IntentService {
      * Only for debug, print app_data Hashmap
      * @param app_data the hashmap to print. Must be a <String, Integer>.
      */
-    public void printAppDataMap(HashMap<String, Integer> app_data)
-    {
+    public void printAppDataMap(HashMap<String, Integer> app_data) {
         for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
-            Log.d("BG", "Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
+            Log.d(TAG, "Data in HASHMAP " + entry.getKey() + ":" + entry.getValue().toString());
         }
     }
 
@@ -167,7 +165,7 @@ public class BackgroundService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         mTimer = 0;
 
-        Log.d("BgService", "Background service has been started");
+        Log.d(TAG, "Background service has been started");
 
         dbManager = new DbManager(getApplicationContext());
 
@@ -182,18 +180,13 @@ public class BackgroundService extends IntentService {
         mReceiver = new ScreenReceiver();
         registerReceiver(mReceiver, filter);
 
-        getLaunchedApps();
-        sendNumberOfUnlockToUI();
-        sendDataToMainUi(screenTimeToday, app_data);
-
         // Main loop. This loop register if the screen is on which apps are launched.
-        while (true)
-        {
-            Log.d("BgService", "Service is up and running, screen is " + ScreenReceiver.isScreenOn + " mTimer vaut " + mTimer);
+        while (true) {
+            Log.d(TAG, "Service is up and running, screen is " + ScreenReceiver.isScreenOn + " mTimer vaut " + mTimer);
             try {
                 if (mTimer == 60) {
                     // Every minute, update DB + refresh data on main UI
-                    Log.d("BG", "Today Date = " + todayDate + " screenTimeToday = " + screenTimeToday);
+                    Log.d(TAG, "Today Date = " + todayDate + " screenTimeToday = " + screenTimeToday);
                     screenTimeToday++;
                     dbManager.updateScreenTime(screenTimeToday, todayDate);
                     dbManager.updateAppData(app_data, todayDate);

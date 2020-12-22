@@ -22,8 +22,7 @@ public class MainFragmentListview extends LinearLayout {
      * @param timer Time to convert in minutes
      */
     //Todo: Maybe Compute time with percentage ?
-    public void setTimer(int timer)
-    {
+    public void setTimer(int timer) {
         TextView app_usage = findViewById(R.id.app_usage_time);
         @SuppressLint("DefaultLocale") String text = String.format("%d:%02d", timer / 60, timer % 60);
         app_usage.setText(text);
@@ -33,8 +32,7 @@ public class MainFragmentListview extends LinearLayout {
      * Set app icon
      * @param icon The icon to draw. This is a drawable
      */
-    public void setIcon(Drawable icon)
-    {
+    public void setIcon(Drawable icon) {
         ImageView id_imageView = findViewById(R.id.app_icon);
         id_imageView.setImageDrawable(icon);
     }
@@ -43,8 +41,7 @@ public class MainFragmentListview extends LinearLayout {
      * The app name
      * @param app_name
      */
-    public void setApp_name(String app_name)
-    {
+    public void setApp_name(String app_name) {
         TextView id_app_name = findViewById(R.id.app_name);
         id_app_name.setText(app_name);
     }
@@ -53,8 +50,7 @@ public class MainFragmentListview extends LinearLayout {
      * Set the percentage bar progression
      * @param percentage In percent / 100
      */
-    public void setPercentage(int percentage)
-    {
+    public void setPercentage(int percentage) {
         ProgressBar id_percentage = findViewById(R.id.app_usage_progress_bar);
         id_percentage.setProgress(percentage);
     }
