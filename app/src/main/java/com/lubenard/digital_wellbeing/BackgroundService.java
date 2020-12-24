@@ -83,7 +83,7 @@ public class BackgroundService extends IntentService {
         app_data = new HashMap<String, Integer>();
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            String string_date = getTodayDate();
+            String string_date = Utils.getTodayDate();
 
             Log.d(TAG, "request date is " + string_date);
             long milliseconds = 0;
@@ -135,17 +135,6 @@ public class BackgroundService extends IntentService {
     }
 
     /**
-     * Get the today's date in formatted format
-     * @return Return today's date
-     */
-    public static String getTodayDate() {
-        Date date = new Date();
-        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        todayDate = dateFormat.format(date);
-        return todayDate;
-    }
-
-    /**
      * Only for debug, print app_data Hashmap
      * @param app_data the hashmap to print. Must be a <String, Integer>.
      */
@@ -168,6 +157,8 @@ public class BackgroundService extends IntentService {
         Log.d(TAG, "Background service has been started");
 
         dbManager = new DbManager(getApplicationContext());
+
+        todayDate = Utils.getTodayDate();
 
         screenTimeToday = dbManager.getScreenTime(todayDate);
         numberOfUnlocks = dbManager.getUnlocks(todayDate);

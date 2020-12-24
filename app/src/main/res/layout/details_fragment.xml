@@ -53,10 +53,22 @@
 			</LinearLayout>
 
 			<com.github.mikephil.charting.charts.BarChart
-				android:id="@+id/chart1"
+				android:id="@+id/details_chart"
 				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:layout_marginTop="25dp"/>
+				android:layout_height="400dp"
+				android:layout_marginTop="25dp"
+				android:layout_weight="1">
+			</com.github.mikephil.charting.charts.BarChart>
+
+			<TextView
+				android:id="@+id/details_description_chart"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="15dp"
+				android:text="@string/details_description_charts"
+				android:layout_gravity="center"
+				android:textSize="20sp"/>
+
 		</LinearLayout>
 	</ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

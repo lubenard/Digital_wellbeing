@@ -217,7 +217,7 @@ public class MainFragment extends Fragment {
 
         setupMainChart();
 
-        todayDate = BackgroundService.getTodayDate();
+        todayDate = Utils.getTodayDate();
 
         dbManager = new DbManager(getContext());
 

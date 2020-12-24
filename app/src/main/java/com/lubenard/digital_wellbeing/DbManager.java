@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Handle the DB used to save datas.
@@ -105,23 +106,6 @@ public class DbManager extends SQLiteOpenHelper {
     }
 
     /**
-     * Transform package name to App name
-     * For example: 'com.facebook.messenger' -> 'Messenger'
-     * @param pkgName The package name you want
-     * @return The name of the app
-     */
-    public String getAppNameFromPkgName(String pkgName) {
-        final PackageManager pm = context.getPackageManager();
-        String appName;
-        try {
-            appName = (String) pm.getApplicationLabel(pm.getApplicationInfo(pkgName, PackageManager.GET_META_DATA));
-        } catch (final PackageManager.NameNotFoundException e) {
-            appName = "";
-        }
-        return appName;
-    }
-
-    /**
      * Create a app Entry only if non existent:
      * Example: you just installed a app, which is not added in the db yet
      */
@@ -135,7 +119,7 @@ public class DbManager extends SQLiteOpenHelper {
             Log.d(TAG, "AppData: I create the entry for " + appPkgName);
             ContentValues cv = new ContentValues();
             cv.put(appsTablePkgName, appPkgName);
-            cv.put(appsTableName, getAppNameFromPkgName(appPkgName));
+            cv.put(appsTableName, Utils.getAppName(context, appPkgName));
             writableDB.insert(appsTable, null, cv);
         } else
             Log.d(TAG, "AppData: The entry for " + appPkgName + " already seems to exist");
@@ -165,7 +149,7 @@ public class DbManager extends SQLiteOpenHelper {
      * Create a Screen Time only if non existent:
      * Example: Past midnight, this is a new day, no entry exist in the db for that day
      * @param newScreenTime new screen time
-     * @param
+     * @param date date to which you want to get the datas
      */
     public void updateScreenTime(int newScreenTime, String date) {
         ContentValues cv = new ContentValues();
@@ -245,8 +229,7 @@ public class DbManager extends SQLiteOpenHelper {
      * @param date Set at which date insert data
      */
     public void updateAppData(HashMap<String, Integer> app_data, String date) {
-
-        String[] columns = new String[]{appTimeTableDate, appTimeTableAppId};
+        //String[] columns = new String[]{appTimeTableDate, appTimeTableAppId};
 
         for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
             ContentValues cv = new ContentValues();
@@ -273,8 +256,7 @@ public class DbManager extends SQLiteOpenHelper {
      * @param pkgName Package name
      * @return The id of that package name in the table
      */
-    public int getIdFromPkgName(String pkgName)
-    {
+    public int getIdFromPkgName(String pkgName) {
         int value;
         String[] columns = new String[]{appsTableId};
         Cursor c = readableDB.query(appsTable, columns, appsTablePkgName + "=?",
@@ -284,6 +266,33 @@ public class DbManager extends SQLiteOpenHelper {
         else
             value = -1;
         return value;
+    }
+
+    /**
+     * Get the datas for Details page.
+     * LinkedHashMap is used instead of HashMap because it remember the items are put on
+     * @param pkgName Name of package. Example: "com.lubenard.digital_wellbeing"
+     * @param limit Limit of result to return. Default is 4 (Why 4 ? Because of MpAndroidCharts -> Dates descriptions are too close to
+     *              each other if there is more than 5 datas)
+     * @param allDatas Bypass limit option. if this option is set to true, all datas will be returned
+     * @return A hashmap containing date and corresponding datas
+     */
+    public LinkedHashMap<String, Integer> getDetailsForApp(String pkgName, int limit, boolean allDatas) {
+        //SELECT date, timeSpent FROM ViewAppsTables WHERE appPkgName="com.lubenard.digital_wellbeing" ORDER BY date DESC LIMIT 7
+        Log.d(TAG, "getDetailsForApp request made for app " + pkgName);
+        LinkedHashMap<String, Integer> app_datas = new LinkedHashMap<>();
+
+        String [] columns = new String[]{appTimeTableDate, appTimeTableTimeSpent};
+        Cursor cursor = readableDB.query(viewAppsTables, columns, appsTablePkgName + "=?",
+                new String[]{pkgName}, null, null, appTimeTableDate + " DESC",
+                (allDatas) ? null : String.valueOf(limit));
+
+        while (cursor.moveToNext()) {
+            app_datas.put(cursor.getString(cursor.getColumnIndex(appTimeTableDate)), cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
+            Log.d(TAG, "getDetailsForApp adding " + cursor.getString(cursor.getColumnIndex(appTimeTableDate)) + " and value " + cursor.getInt(cursor.getColumnIndex(appTimeTableTimeSpent)));
+        }
+        cursor.close();
+        return app_datas;
     }
 
     /**

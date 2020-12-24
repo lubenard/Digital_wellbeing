@@ -9,7 +9,8 @@
     <string name="number_of_unlocks_textview">Number of unlocks:</string>
 
     <!-- Details fragment -->
-    <string name="details_fragment_title">Details</string>
+    <string name="details_fragment_title">Details of</string>
+    <string name="details_description_charts">The values are in minutes</string>
 
     <!-- Permissions Fragment-->
     <string name="permissions_fragment_text">In order to use this app, you need to grant special authorization.\nThis app will not upload any of your data on any server.</string>
