@@ -1,6 +1,7 @@
 package com.lubenard.digital_wellbeing;
 
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -131,10 +132,15 @@ public class MainFragment extends Fragment {
         mainPieChart.setExtraOffsets(5, 0, 5, 10);
         mainPieChart.setDragDecelerationFrictionCoef(0.99f);
         mainPieChart.setDrawHoleEnabled(true);
-        mainPieChart.setHoleColor(Color.DKGRAY);
+        if (PreferenceManager.getDefaultSharedPreferences(getContext()).getString("ui_theme", "dark").equals("dark")) {
+            mainPieChart.setHoleColor(Color.DKGRAY);
+            mainPieChart.setCenterTextColor(Color.WHITE);
+        } else {
+            mainPieChart.setHoleColor(Color.WHITE);
+            mainPieChart.setCenterTextColor(Color.BLACK);
+        }
         mainPieChart.setTransparentCircleRadius(0);
         mainPieChart.getLegend().setEnabled(false);
-        mainPieChart.setCenterTextColor(Color.WHITE);
         mainPieChart.setCenterText(getResources().getString(R.string.main_textView_screen_time) + String.format("\n%d:%02d", screenTimeToday / 60, screenTimeToday % 60));
         mainPieChart.setCenterTextSize(35);
         mainPieChart.setRotationEnabled(false);
