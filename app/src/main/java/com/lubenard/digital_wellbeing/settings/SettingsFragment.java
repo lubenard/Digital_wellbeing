@@ -63,11 +63,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             public boolean onPreferenceClick(Preference preference) {
                 new AlertDialog.Builder(getContext())
                         .setTitle("Delete all your data")
-                        .setMessage("Are you sure you want to all your data ? All losses are definitive")
+                        .setMessage("Are you sure you want to delete all your data ? All losses are definitive. Once completed, the app will shut down.")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // Delete DB
                                 getContext().deleteDatabase(DbManager.getDBName());
+                                // This is sending a -9 signal. I do not like this.
+                                // TODO: find a way to shut down the app as well as the intent
+                                android.os.Process.killProcess(android.os.Process.myPid());
+                                //getActivity().finish(); // <-- This is better but does not kill the intent
                             }
                         })
                         .setNegativeButton(android.R.string.no, null)
