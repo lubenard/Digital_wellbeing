@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -55,6 +56,7 @@ public class MainFragment extends Fragment {
     private int screenTimeToday;
 
     HashMap<String, MainFragmentListview> listviewAppPkgHashMap = new HashMap<>();
+    private Context context;
 
     public void updateScreenTime(int addTime) {
         screenTimeToday = addTime;
@@ -86,7 +88,7 @@ public class MainFragment extends Fragment {
      */
     @SuppressLint("DefaultLocale")
     public void updateTextViewScreenTime() {
-        mainPieChart.setCenterText(String.format("%s\n%d:%02d", getResources().getString(R.string.main_textView_screen_time),
+        mainPieChart.setCenterText(String.format("%s\n%d:%02d", context.getResources().getString(R.string.main_textView_screen_time),
                 screenTimeToday / 60, screenTimeToday % 60));
     }
 
@@ -99,7 +101,7 @@ public class MainFragment extends Fragment {
 
         for (HashMap.Entry<String, Integer> HMdata : app_data.entrySet()) {
             // turn your data into Entry objects
-            entries.add(new PieEntry(HMdata.getValue(), Utils.getAppName(getContext(), HMdata.getKey())));
+            entries.add(new PieEntry(HMdata.getValue(), Utils.getAppName(context, HMdata.getKey())));
             Log.d(TAG, "Data in HASHMAP UPDATE " + HMdata.getValue() +  " : " + HMdata.getKey());
         }
 
@@ -117,7 +119,6 @@ public class MainFragment extends Fragment {
         PieData data = new PieData(dataSet);
         data.setValueFormatter(new PercentFormatter());
         data.setValueTextSize(10f);
-        data.setValueTextColor(Color.YELLOW);
         mainPieChart.setData(data);
         mainPieChart.invalidate();
     }
@@ -132,13 +133,14 @@ public class MainFragment extends Fragment {
         mainPieChart.setExtraOffsets(5, 0, 5, 10);
         mainPieChart.setDragDecelerationFrictionCoef(0.99f);
         mainPieChart.setDrawHoleEnabled(true);
-        if (PreferenceManager.getDefaultSharedPreferences(getContext()).getString("ui_theme", "dark").equals("dark")) {
+        if (PreferenceManager.getDefaultSharedPreferences(context).getString("ui_theme", "dark").equals("dark")) {
             mainPieChart.setHoleColor(Color.DKGRAY);
             mainPieChart.setCenterTextColor(Color.WHITE);
         } else {
             mainPieChart.setHoleColor(Color.WHITE);
             mainPieChart.setCenterTextColor(Color.BLACK);
         }
+        mainPieChart.setEntryLabelColor(Color.BLACK);
         mainPieChart.setTransparentCircleRadius(0);
         mainPieChart.getLegend().setEnabled(false);
         mainPieChart.setCenterText(getResources().getString(R.string.main_textView_screen_time) + String.format("\n%d:%02d", screenTimeToday / 60, screenTimeToday % 60));
@@ -157,7 +159,7 @@ public class MainFragment extends Fragment {
             // If it does, no need to recreate one, only update it
             if ((listViewElement = listviewAppPkgHashMap.get(entry.getKey())) != null) {
                 Log.d(TAG, "listview: Only need to update for " + entry.getKey());
-                listViewElement.setApp_name(Utils.getAppName(getContext(), entry.getKey()));
+                listViewElement.setApp_name(Utils.getAppName(context, entry.getKey()));
                 if (screenTimeToday > 0) {
                     //Relative percentage, find a more precise way to tell ?
                     listViewElement.setPercentage(Math.round(((float) entry.getValue() / screenTimeToday) * 100));
@@ -166,15 +168,15 @@ public class MainFragment extends Fragment {
                 listViewElement.invalidate();
             } else {
                 Log.d(TAG, "listview: View needed to be created for " + entry.getKey());
-                listViewElement = new MainFragmentListview(getContext());
+                listViewElement = new MainFragmentListview(context);
                 listviewAppPkgHashMap.put(entry.getKey(), listViewElement);
-                listViewElement.setApp_name(Utils.getAppName(getContext(), entry.getKey()));
+                listViewElement.setApp_name(Utils.getAppName(context, entry.getKey()));
                 if (screenTimeToday > 0)
                     listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
                 else
                     listViewElement.setPercentage(0);
                 listViewElement.setTimer(entry.getValue());
-                listViewElement.setIcon(Utils.getIconFromPkgName(getContext(), entry.getKey()));
+                listViewElement.setIcon(Utils.getIconFromPkgName(context, entry.getKey()));
                 listViewElement.invalidate();
                 listViewElement.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -225,7 +227,7 @@ public class MainFragment extends Fragment {
 
         todayDate = Utils.getTodayDate();
 
-        dbManager = new DbManager(getContext());
+        dbManager = new DbManager(context);
 
         Log.d(TAG, "screenTimeToday is " + screenTimeToday);
 
@@ -251,7 +253,7 @@ public class MainFragment extends Fragment {
             setBgService(new Intent(MainFragment.this.getActivity(), BackgroundService.class));
             bgService.putExtra("messenger", new Messenger(handler));
         }
-        getContext().startService(bgService);
+        context.startService(bgService);
     }
 
     /**
@@ -309,4 +311,14 @@ public class MainFragment extends Fragment {
         Log.d(TAG, "OnPause: listView is destroyed");
         listviewAppPkgHashMap.clear();
     }
+
+    @Override
+    public void onAttach(Context ctx) {
+        super.onAttach(ctx);
+        // Used to fix the bug while changing theme.
+        // Changing theme restarted the Activity and getContext returned null.
+        // This fix this issue
+        context = ctx;
+    }
+
 }

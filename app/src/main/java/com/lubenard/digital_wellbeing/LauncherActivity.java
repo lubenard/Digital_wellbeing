@@ -42,8 +42,7 @@ public class LauncherActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         checkConfig();
         super.onCreate(savedInstanceState);
 
