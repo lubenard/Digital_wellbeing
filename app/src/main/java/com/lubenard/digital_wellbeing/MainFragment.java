@@ -213,6 +213,12 @@ public class MainFragment extends Fragment {
         bgService = newBgService;
     }
 
+    private void getFreshDatas() {
+        updateScreenTime(dbManager.getScreenTime(todayDate));
+        updateStats(dbManager.getAppStats(todayDate));
+        updateNumberOfUnlocksTextView(BackgroundService.getNumberOfUnlocks());
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -285,6 +291,9 @@ public class MainFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_refresh:
+                getFreshDatas();
+                return true;
             case R.id.action_settings:
                 //Launch settings page
                 SettingsFragment settingsFrag = new SettingsFragment();
@@ -309,11 +318,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "OnResume: " + todayDate);
-
-        updateScreenTime(dbManager.getScreenTime(todayDate));
-        updateStats(dbManager.getAppStats(todayDate));
-        updateNumberOfUnlocksTextView(BackgroundService.getNumberOfUnlocks());
+        getFreshDatas();
         if (clickAboutNbr >= 10) {
             PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("is_easter_unlocked", true).commit();
             Toast.makeText(context, context.getResources().getText(R.string.easter_discovered), Toast.LENGTH_SHORT).show();
@@ -324,7 +329,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        Log.d(TAG, "OnPause: listView is destroyed");
+        // Destroy ListView to be recreated when onResume is called
         listviewAppPkgHashMap.clear();
     }
 
