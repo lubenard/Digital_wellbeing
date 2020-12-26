@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
@@ -36,6 +37,8 @@ import com.lubenard.digital_wellbeing.settings.SettingsFragment;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Main UI Fragment
@@ -57,6 +60,9 @@ public class MainFragment extends Fragment {
 
     HashMap<String, MainFragmentListview> listviewAppPkgHashMap = new HashMap<>();
     private Context context;
+
+    private int clickAboutNbr;
+
 
     public void updateScreenTime(int addTime) {
         screenTimeToday = addTime;
@@ -133,19 +139,22 @@ public class MainFragment extends Fragment {
         mainPieChart.setExtraOffsets(5, 0, 5, 10);
         mainPieChart.setDragDecelerationFrictionCoef(0.99f);
         mainPieChart.setDrawHoleEnabled(true);
-        if (PreferenceManager.getDefaultSharedPreferences(context).getString("ui_theme", "dark").equals("dark")) {
-            mainPieChart.setHoleColor(Color.DKGRAY);
-            mainPieChart.setCenterTextColor(Color.WHITE);
-        } else {
+        if (PreferenceManager.getDefaultSharedPreferences(context).getString("ui_theme", "dark").equals("white")) {
             mainPieChart.setHoleColor(Color.WHITE);
             mainPieChart.setCenterTextColor(Color.BLACK);
+        } else {
+            mainPieChart.setHoleColor(Color.DKGRAY);
+            mainPieChart.setCenterTextColor(Color.WHITE);
         }
         mainPieChart.setEntryLabelColor(Color.BLACK);
         mainPieChart.setTransparentCircleRadius(0);
         mainPieChart.getLegend().setEnabled(false);
         mainPieChart.setCenterText(getResources().getString(R.string.main_textView_screen_time) + String.format("\n%d:%02d", screenTimeToday / 60, screenTimeToday % 60));
         mainPieChart.setCenterTextSize(35);
-        mainPieChart.setRotationEnabled(false);
+        if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("is_easter_unlocked", false))
+            mainPieChart.setRotationEnabled(true);
+        else
+            mainPieChart.setRotationEnabled(false);
     }
 
     /**
@@ -283,7 +292,9 @@ public class MainFragment extends Fragment {
                         .replace(android.R.id.content, settingsFrag, "findThisFragment")
                         .addToBackStack(null).commit();
                 return true;
-            case R.id.action_licences:
+            case R.id.action_about:
+                clickAboutNbr++;
+                Log.d(TAG, "Click about: " + clickAboutNbr);
                 //Launch about page
                 AboutFragment aboutFrag = new AboutFragment();
                 getActivity().getSupportFragmentManager().beginTransaction()
@@ -303,6 +314,11 @@ public class MainFragment extends Fragment {
         updateScreenTime(dbManager.getScreenTime(todayDate));
         updateStats(dbManager.getAppStats(todayDate));
         updateNumberOfUnlocksTextView(BackgroundService.getNumberOfUnlocks());
+        if (clickAboutNbr >= 10) {
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("is_easter_unlocked", true).commit();
+            Toast.makeText(context, context.getResources().getText(R.string.easter_discovered), Toast.LENGTH_SHORT).show();
+            mainPieChart.setRotationEnabled(true);
+        }
     }
 
     @Override

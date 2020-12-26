@@ -53,12 +53,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                         break;
                 }
-                Log.d("Test", "Is this notif played ?");
-                /*getFragmentManager()
-                        .beginTransaction()
-                        .detach(SettingsFragment.this)
-                        .attach(SettingsFragment.this)
-                        .commit();*/
                 return true;
             }
         });
