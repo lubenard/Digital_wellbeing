@@ -1,5 +1,6 @@
 package com.lubenard.digital_wellbeing;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
