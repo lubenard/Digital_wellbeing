@@ -24,6 +24,7 @@
         <CheckBoxPreference
             app:key="tweaks_permanent_notification"
             app:title="Let a permanent notification"
+            app:summary="@string/settings_other_permanent_notif_description"
             android:defaultValue="false"/>
 
         <Preference
@@ -42,6 +43,11 @@
             android:defaultValue="true"/>
 
     </PreferenceCategory>
+
+    <Preference
+        app:key="other_dev_settings"
+        app:title="@string/settings_other_dev_title"
+        app:summary="@string/settings_other_dev_description"/>
 
     <Preference
         app:key="other_feedback"

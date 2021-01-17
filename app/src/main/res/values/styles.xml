@@ -14,7 +14,7 @@
         <item name="android:layout_marginRight">8dp</item>
     </style>
 
-    <style name="Text.Licence_Title" parent="Text">
+    <style name="Text.Title" parent="Text">
         <item name="android:textSize">@dimen/font_size_title</item>
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:layout_marginBottom">8dp</item>

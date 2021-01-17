@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<TextView
+		android:id="@+id/dev_title_mn"
+		style="@style/Text.Title"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:layout_marginTop="50dp"
+		android:text="Minutes spent on phone related" />
+
+	<Button
+		android:id="@+id/dev_add_1_mn"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:text="Add 1 minute to today's time" />
+
+	<Button
+		android:id="@+id/dev_rm_1_mn"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:text="Remove 1 minute to today's time" />
+
+	<TextView
+		android:id="@+id/dev_title_custom_mn"
+		style="@style/Text.Title"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:layout_marginTop="50dp"
+		android:text="Set Custom value" />
+
+	<EditText
+		android:id="@+id/dev_custom_mn"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:ems="10"
+		android:hint="123"
+		android:maxLength="4"
+		android:layout_gravity="center"
+		android:inputType="number" />
+
+	<View style="@style/Divider" />
+
+	<TextView
+		android:id="@+id/title_dev_unlock"
+		style="@style/Text.Title"
+		android:layout_marginTop="30dp"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:text="Phone Unlocking related" />
+
+	<Button
+		android:id="@+id/dev_add_1_unlock"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:text="Add 1 unlock to today's date" />
+
+	<Button
+		android:id="@+id/dev_rm_1_unlock"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:text="Remove 1 unlock to today's date" />
+</LinearLayout>
