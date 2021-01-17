@@ -27,8 +27,11 @@
     <string name="settings_ui_theme_black">Black (better for AMOLED)</string>
     <string name="settings_ui_theme_battery_saver">Set by battery saver</string>
     <string name="settings_ui_theme_system">Let the system decide</string>
+    <string name="settings_other_permanent_notif_description">Avoid the background service to be killed by system</string>
     <string name="settings_other_feedback_title">Send feedback</string>
     <string name="settings_other_feedback_description">Report technical issues or suggest new features</string>
+    <string name="settings_other_dev_title">Developper / Debugging settings</string>
+    <string name="settings_other_dev_description">Tools useful for debugging</string>
 
     <!-- Option Menu -->
     <string name="about_additional_software_licenses">Licences</string>
@@ -40,9 +43,9 @@
     <string name="notif_permanent_channel_desc">Channel used to send ONLY the permanent notification</string>
     <string name="notif_permanent_name">Permanent notification</string>
     <string name="notif_permanent_notif_desc">is running in background!</string>
-    <string name="origin_icon">The icon of this app is coming from flaticon.com</string>
 
     <!-- Miscellaneous -->
     <string name="main_screen_option_refresh">Refresh datas</string>
 	<string name="easter_discovered">Well played ! You discovered the easter egg !</string>
+    <string name="origin_icon">The icon of this app is coming from flaticon.com</string>
 </resources>

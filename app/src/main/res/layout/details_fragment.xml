@@ -52,14 +52,6 @@
 				</LinearLayout>
 			</LinearLayout>
 
-			<com.github.mikephil.charting.charts.BarChart
-				android:id="@+id/details_chart"
-				android:layout_width="match_parent"
-				android:layout_height="400dp"
-				android:layout_marginTop="25dp"
-				android:layout_weight="1">
-			</com.github.mikephil.charting.charts.BarChart>
-
 			<TextView
 				android:id="@+id/details_description_chart"
 				android:layout_width="wrap_content"
@@ -69,6 +61,13 @@
 				android:layout_gravity="center"
 				android:textSize="20sp"/>
 
+			<com.github.mikephil.charting.charts.BarChart
+				android:id="@+id/details_chart"
+				android:layout_width="match_parent"
+				android:layout_height="400dp"
+				android:layout_marginTop="25dp"
+				android:layout_weight="1">
+			</com.github.mikephil.charting.charts.BarChart>
 		</LinearLayout>
 	</ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,22 +6,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
-import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.lubenard.digital_wellbeing.Utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,7 +62,7 @@ public class AppDetail extends Fragment {
 
         //Not a big fan of calling each time getTodayDate.
         // Find a way to make this a global variable instead ?
-        LinkedHashMap<String, Integer> app_data = dbManager.getDetailsForApp(app_pkg, 4, false);
+        LinkedHashMap<String, Integer> app_data = dbManager.getDetailsForApp(app_pkg, 7, false);
 
         int counter = 0;
 
@@ -87,7 +83,7 @@ public class AppDetail extends Fragment {
 
         // Design the chart
         // Disable the Zoom by pinching
-        chart.setPinchZoom(false);
+        chart.setScaleEnabled(false);
         //Disable the vertical grid
         xAxis.setDrawGridLines(false);
         //Disable the horizontal grid
