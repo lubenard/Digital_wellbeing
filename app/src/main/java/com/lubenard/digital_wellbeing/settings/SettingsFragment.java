@@ -1,32 +1,32 @@
 package com.lubenard.digital_wellbeing.settings;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Messenger;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
 
-import com.lubenard.digital_wellbeing.BackgroundService;
 import com.lubenard.digital_wellbeing.DbManager;
-import com.lubenard.digital_wellbeing.MainFragment;
 import com.lubenard.digital_wellbeing.NotificationsHandler;
 import com.lubenard.digital_wellbeing.R;
-
-import java.util.logging.Logger;
+import com.lubenard.digital_wellbeing.Utils.Utils;
 
 /**
  * Settings page.
  */
 public class SettingsFragment extends PreferenceFragmentCompat {
+
+    public static final String TAG = "SettingsFragment";
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -38,7 +38,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         theme.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                Log.d("Setting page", "Theme value has changed for " + newValue);
+                Log.d(TAG, "Theme value has changed for " + newValue);
                 switch (newValue.toString()) {
                     case "dark":
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
@@ -53,6 +53,27 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                         break;
                 }
+                return true;
+            }
+        });
+
+        // reset preference click listener
+        Preference export = findPreference("tweaks_export_data");
+        export.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                if (Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        Intent dataToFileChooser = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                        dataToFileChooser.setType("text/xml");
+                        try {
+                            startActivityForResult(dataToFileChooser, 1);
+                        } catch (ActivityNotFoundException e) {
+                            Log.e(TAG, getContext().getResources().getString(R.string.toast_error_custom_path_backup));
+                            Toast.makeText(getContext(), R.string.toast_error_custom_path_backup, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+
                 return true;
             }
         });
@@ -86,16 +107,28 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         permanentNotif.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                Log.d("Setting page", "permanent notif value has changed for " + newValue);
+                Log.d(TAG, "permanent notif value has changed for " + newValue);
 
                 if (newValue.toString().equals("true")) {
-                    Log.d("Setting page", "permanent notif is true");
+                    Log.d(TAG, "permanent notif is true");
                     new NotificationsHandler().createPermanentNotification(getContext());
                 } else {
                     NotificationManager mNotificationManager = (NotificationManager) getContext().getSystemService(getContext().NOTIFICATION_SERVICE);
-                    Log.d("Setting page", "permanent notif is false");
+                    Log.d(TAG, "permanent notif is false");
                     mNotificationManager.cancel(0);
                 }
+                return true;
+            }
+        });
+
+        // reset preference click listener
+        Preference devSettings = findPreference("other_dev_settings");
+        devSettings.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                DevFragment devFragment = new DevFragment();
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(android.R.id.content, devFragment)
+                        .addToBackStack(null).commit();
                 return true;
             }
         });

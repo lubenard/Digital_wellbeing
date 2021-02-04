@@ -6,8 +6,6 @@ import androidx.preference.PreferenceManager;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,6 +28,7 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.lubenard.digital_wellbeing.Utils.Utils;
 import com.lubenard.digital_wellbeing.custom_component.MainFragmentListview;
 import com.lubenard.digital_wellbeing.settings.AboutFragment;
 import com.lubenard.digital_wellbeing.settings.SettingsFragment;
@@ -37,8 +36,6 @@ import com.lubenard.digital_wellbeing.settings.SettingsFragment;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Main UI Fragment

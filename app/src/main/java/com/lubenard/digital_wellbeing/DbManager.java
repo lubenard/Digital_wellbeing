@@ -3,11 +3,12 @@ package com.lubenard.digital_wellbeing;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import com.lubenard.digital_wellbeing.Utils.Utils;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -149,6 +150,24 @@ public class DbManager extends SQLiteOpenHelper {
     /**
      * Create a Screen Time only if non existent:
      * Example: Past midnight, this is a new day, no entry exist in the db for that day
+     * @param date date to which you want to get the datas
+     */
+    public void incrementScreenTime(String date) {
+        ContentValues cv = new ContentValues();
+        cv.put(screenTimeTableScreenTime, getScreenTime(date));
+
+        Log.d(TAG, "incrementScreenTime: increment for date = " + date);
+        int u = writableDB.update(screenTimeTable, cv, screenTimeTableDate + "=?", new String []{date});
+        if (u == 0) {
+            Log.d(TAG, "updateScreenTime: increment does not seems to work, insert data for date = " + date);
+            cv.put(screenTimeTableDate, date);
+            writableDB.insertWithOnConflict(screenTimeTable, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+    }
+
+    /**
+     * Create a Screen Time only if non existent:
+     * Example: Past midnight, this is a new day, no entry exist in the db for that day
      * @param newScreenTime new screen time
      * @param date date to which you want to get the datas
      */
@@ -271,7 +290,8 @@ public class DbManager extends SQLiteOpenHelper {
 
     /**
      * Get the datas for Details page.
-     * LinkedHashMap is used instead of HashMap because it remember the items are put on
+     * LinkedHashMap is used instead of HashMap because it remember the order
+     * in which items are put in
      * @param pkgName Name of package. Example: "com.lubenard.digital_wellbeing"
      * @param limit Limit of result to return. Default is 4 (Why 4 ? Because of MpAndroidCharts -> Dates descriptions are too close to
      *              each other if there is more than 5 datas)

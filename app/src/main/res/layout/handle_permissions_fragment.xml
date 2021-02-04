@@ -7,7 +7,7 @@
 
     <TextView
         android:id="@+id/textView"
-        style="@style/Text.Licence_Title"
+        style="@style/Text.Title"
         android:layout_marginTop="154dp"
         android:text="@string/permissions_fragment_text"
         android:gravity="center"

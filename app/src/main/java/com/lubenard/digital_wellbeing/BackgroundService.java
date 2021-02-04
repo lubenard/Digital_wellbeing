@@ -14,7 +14,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import java.text.DateFormat;
+import com.lubenard.digital_wellbeing.Utils.Utils;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -174,12 +175,15 @@ public class BackgroundService extends IntentService {
         // Main loop. This loop register if the screen is on which apps are launched.
         while (true) {
             Log.d(TAG, "Service is up and running, screen is " + ScreenReceiver.isScreenOn + " mTimer vaut " + mTimer);
+
+            //Log.d(TAG, "Running app in foreground is " + Utils.getCurrentForegroundApp(getApplicationContext()));
+
             try {
                 if (mTimer == 60) {
                     // Every minute, update DB + refresh data on main UI
                     Log.d(TAG, "Today Date = " + todayDate + " screenTimeToday = " + screenTimeToday);
                     screenTimeToday++;
-                    dbManager.updateScreenTime(screenTimeToday, todayDate);
+                    dbManager.incrementScreenTime(todayDate);
                     dbManager.updateAppData(app_data, todayDate);
                     dbManager.updateUnlocks(numberOfUnlocks, todayDate);
                     sendDataToMainUi(screenTimeToday, app_data);
