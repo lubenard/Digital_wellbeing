@@ -10,7 +10,7 @@
         android:orientation="vertical">
 
         <TextView
-            style="@style/Text.Licence_Title"
+            style="@style/Text.Title"
             android:text="@string/license_app_title"/>
 
         <TextView
@@ -25,7 +25,7 @@
             style="@style/Divider" />
 
         <TextView
-            style="@style/Text.Licence_Title"
+            style="@style/Text.Title"
             android:text="@string/license_mpandroidCharts_title"/>
 
         <TextView
@@ -40,7 +40,22 @@
             style="@style/Divider" />
 
         <TextView
-            style="@style/Text.Licence_Title"
+            style="@style/Text.Title"
+            android:text="@string/license_XmlWriter_title"/>
+
+        <TextView
+            style="@style/Text.Licence_Text"
+            android:text="@string/license_XmlWriter_licence"/>
+
+        <TextView
+            style="@style/Text.Licence_Text"
+            android:text="@string/license_XmlWriter_source"/>
+
+        <View
+            style="@style/Divider" />
+
+        <TextView
+            style="@style/Text.Title"
             android:text="@string/origin_icon"/>
 
     </LinearLayout>
