@@ -48,5 +48,5 @@
     <string name="main_screen_option_refresh">Refresh datas</string>
 	<string name="easter_discovered">Well played ! You discovered the easter egg !</string>
     <string name="origin_icon">The icon of this app is coming from flaticon.com</string>
-	<string name="toast_error_custom_path_backup">\"Failed to open a file explorer. Save will be at default location\"</string>
+	<string name="toast_error_custom_path_backup">Failed to open a file explorer. Save will be at default location</string>
 </resources>

@@ -131,7 +131,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InvalidObjectException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Stack;
 
 /**
@@ -173,6 +176,10 @@ public class XmlWriter {
 
     public XmlWriter(File outputFile) throws IOException {
         this(new FileWriter(outputFile), true, 0, true);
+    }
+
+    public XmlWriter(OutputStream outputFileStream) throws IOException {
+        this(new OutputStreamWriter(outputFileStream, StandardCharsets.UTF_8), true, 0, true);
     }
 
     /**

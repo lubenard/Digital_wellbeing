@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.lubenard.digital_wellbeing.Utils.Utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -147,6 +148,21 @@ public class DbManager extends SQLiteOpenHelper {
         return value;
     }
 
+    public LinkedHashMap<String, Integer> getAllScreenTime() {
+        Log.d(TAG, "getAllScreenTime request");
+        LinkedHashMap<String, Integer> app_datas = new LinkedHashMap<>();
+
+        String [] columns = new String[]{screenTimeTableDate, screenTimeTableScreenTime};
+        Cursor cursor = readableDB.query(screenTimeTable, columns, null, null, null, null, screenTimeTableDate + " DESC");
+
+        while (cursor.moveToNext()) {
+            app_datas.put(cursor.getString(cursor.getColumnIndex(screenTimeTableDate)), cursor.getInt(cursor.getColumnIndex(screenTimeTableScreenTime)));
+            Log.d(TAG, "getDetailsForApp adding " + cursor.getString(cursor.getColumnIndex(screenTimeTableDate)) + " and value " + cursor.getInt(cursor.getColumnIndex(screenTimeTableScreenTime)));
+        }
+        cursor.close();
+        return app_datas;
+    }
+
     /**
      * Create a Screen Time only if non existent:
      * Example: Past midnight, this is a new day, no entry exist in the db for that day
@@ -222,6 +238,21 @@ public class DbManager extends SQLiteOpenHelper {
         }
     }
 
+    public LinkedHashMap<String, Integer> getAllUnclocks() {
+        Log.d(TAG, "getAllUnlocks request");
+        LinkedHashMap<String, Integer> app_datas = new LinkedHashMap<>();
+
+        String [] columns = new String[]{unlockTableDate, unlockTableUnlockNbr};
+        Cursor cursor = readableDB.query(unlockTable, columns, null, null, null, null, unlockTableDate + " DESC");
+
+        while (cursor.moveToNext()) {
+            app_datas.put(cursor.getString(cursor.getColumnIndex(unlockTableDate)), cursor.getInt(cursor.getColumnIndex(unlockTableUnlockNbr)));
+            Log.d(TAG, "getDetailsForApp adding " + cursor.getString(cursor.getColumnIndex(unlockTableDate)) + " and value " + cursor.getInt(cursor.getColumnIndex(unlockTableUnlockNbr)));
+        }
+        cursor.close();
+        return app_datas;
+    }
+
     /**
      * Get the app datas for a specific date
      * @param date date to which you want to get the datas
@@ -249,8 +280,6 @@ public class DbManager extends SQLiteOpenHelper {
      * @param date Set at which date insert data
      */
     public void updateAppData(HashMap<String, Integer> app_data, String date) {
-        //String[] columns = new String[]{appTimeTableDate, appTimeTableAppId};
-
         for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
             ContentValues cv = new ContentValues();
 
@@ -286,6 +315,28 @@ public class DbManager extends SQLiteOpenHelper {
         else
             value = -1;
         return value;
+    }
+
+    /**
+     * Get listed apps
+     * @return a String array containing all apps in the db
+     */
+    public ArrayList<String> getAllApps() {
+        ArrayList<String> arrayOfApps = new ArrayList<String>();
+
+        Log.d(TAG, "getDetailsForApp request made for all apps");
+
+        String[] columns = new String[]{appsTablePkgName};
+        Cursor cursor = readableDB.query(appsTable, columns,null,
+                null, null, null, null);
+
+        while (cursor.moveToNext()) {
+            arrayOfApps.add(cursor.getString(cursor.getColumnIndex(appsTablePkgName)));
+            Log.d(TAG, "getAllApps getting " + cursor.getString(cursor.getColumnIndex(appsTablePkgName)));
+        }
+        cursor.close();
+
+        return arrayOfApps;
     }
 
     /**

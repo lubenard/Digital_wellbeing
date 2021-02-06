@@ -1,6 +1,5 @@
 package com.lubenard.digital_wellbeing.Utils;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -16,8 +15,6 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.core.content.ContextCompat;
-
-import com.lubenard.digital_wellbeing.R;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -91,10 +88,12 @@ public class Utils {
                 // continue using your app without granting the permission.
                 //new AlertDialog.Builder(context).setTitle(context.getResources().getString(R.string.alertdialog_perm_not_granted_title))
                  //   .setMessage(context.getResources().getString(R.string.alertdialog_perm_not_granted_desc)).setPositiveButton(context.getResources().getString(R.));
+                return false;
             } else {
                 // You can directly ask for the permission.
                 // The registered ActivityResultCallback gets the result of this request.
                 activity.requestPermissions(new String[]{permRequired}, 1);
+                return true;
             }
         }
         return false;

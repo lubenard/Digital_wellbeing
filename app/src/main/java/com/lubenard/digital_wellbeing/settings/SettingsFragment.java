@@ -61,18 +61,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         Preference export = findPreference("tweaks_export_data");
         export.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
-                if (Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                        Intent dataToFileChooser = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                        dataToFileChooser.setType("text/xml");
-                        try {
-                            startActivityForResult(dataToFileChooser, 1);
-                        } catch (ActivityNotFoundException e) {
-                            Log.e(TAG, getContext().getResources().getString(R.string.toast_error_custom_path_backup));
-                            Toast.makeText(getContext(), R.string.toast_error_custom_path_backup, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }
+                Intent intent = new Intent(getContext(), BackupAndRestoreFragment.class);
+                startActivity(intent);
 
                 return true;
             }

@@ -24,6 +24,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".settings.BackupAndRestoreFragment"
+            android:label="@string/app_name" />
         <!-- The Background service that monitor the activity-->
         <service android:name = ".BackgroundService"/>
 
