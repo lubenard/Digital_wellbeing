@@ -148,6 +148,10 @@ public class DbManager extends SQLiteOpenHelper {
         return value;
     }
 
+    /**
+     * get The screen time for all days, inserted into a LinkedHashMap
+     * @return the screenTime for all days
+     */
     public LinkedHashMap<String, Integer> getAllScreenTime() {
         Log.d(TAG, "getAllScreenTime request");
         LinkedHashMap<String, Integer> app_datas = new LinkedHashMap<>();
@@ -157,7 +161,7 @@ public class DbManager extends SQLiteOpenHelper {
 
         while (cursor.moveToNext()) {
             app_datas.put(cursor.getString(cursor.getColumnIndex(screenTimeTableDate)), cursor.getInt(cursor.getColumnIndex(screenTimeTableScreenTime)));
-            Log.d(TAG, "getDetailsForApp adding " + cursor.getString(cursor.getColumnIndex(screenTimeTableDate)) + " and value " + cursor.getInt(cursor.getColumnIndex(screenTimeTableScreenTime)));
+            Log.d(TAG, "getAllScreenTime adding " + cursor.getString(cursor.getColumnIndex(screenTimeTableDate)) + " and value " + cursor.getInt(cursor.getColumnIndex(screenTimeTableScreenTime)));
         }
         cursor.close();
         return app_datas;
@@ -170,9 +174,10 @@ public class DbManager extends SQLiteOpenHelper {
      */
     public void incrementScreenTime(String date) {
         ContentValues cv = new ContentValues();
-        cv.put(screenTimeTableScreenTime, getScreenTime(date));
+        cv.put(screenTimeTableScreenTime, getScreenTime(date) + 1);
 
         Log.d(TAG, "incrementScreenTime: increment for date = " + date);
+
         int u = writableDB.update(screenTimeTable, cv, screenTimeTableDate + "=?", new String []{date});
         if (u == 0) {
             Log.d(TAG, "updateScreenTime: increment does not seems to work, insert data for date = " + date);
@@ -238,6 +243,10 @@ public class DbManager extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * get The unlock number for all days, inserted into a LinkedHashMap
+     * @return all the unlocks for all days
+     */
     public LinkedHashMap<String, Integer> getAllUnclocks() {
         Log.d(TAG, "getAllUnlocks request");
         LinkedHashMap<String, Integer> app_datas = new LinkedHashMap<>();
@@ -247,7 +256,7 @@ public class DbManager extends SQLiteOpenHelper {
 
         while (cursor.moveToNext()) {
             app_datas.put(cursor.getString(cursor.getColumnIndex(unlockTableDate)), cursor.getInt(cursor.getColumnIndex(unlockTableUnlockNbr)));
-            Log.d(TAG, "getDetailsForApp adding " + cursor.getString(cursor.getColumnIndex(unlockTableDate)) + " and value " + cursor.getInt(cursor.getColumnIndex(unlockTableUnlockNbr)));
+            Log.d(TAG, "getAllUnlocks adding " + cursor.getString(cursor.getColumnIndex(unlockTableDate)) + " and value " + cursor.getInt(cursor.getColumnIndex(unlockTableUnlockNbr)));
         }
         cursor.close();
         return app_datas;
@@ -324,7 +333,7 @@ public class DbManager extends SQLiteOpenHelper {
     public ArrayList<String> getAllApps() {
         ArrayList<String> arrayOfApps = new ArrayList<String>();
 
-        Log.d(TAG, "getDetailsForApp request made for all apps");
+        Log.d(TAG, "getAllApps request made for all apps");
 
         String[] columns = new String[]{appsTablePkgName};
         Cursor cursor = readableDB.query(appsTable, columns,null,
@@ -368,6 +377,7 @@ public class DbManager extends SQLiteOpenHelper {
     }
 
     /**
+     * DEBUG FUNCTION
      * Use this function for testing. Print all the content of a given table
      * @param tableName Table name to print
      */
