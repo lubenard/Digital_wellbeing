@@ -1,7 +1,10 @@
 package com.lubenard.digital_wellbeing;
 
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +12,10 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
+
+import com.lubenard.digital_wellbeing.settings.SettingsFragment;
+
+import java.util.Locale;
 
 /**
  * Decide whether or not the app should launch the main Fragment or the permission Fragment
@@ -39,6 +46,30 @@ public class LauncherActivity extends AppCompatActivity {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
         }
+
+        String language_option = sharedPreferences.getString("ui_language", "system");
+        switch (language_option) {
+            case "en":
+                setAppLocale("en-us");
+                break;
+            case "fr":
+                setAppLocale("fr");
+                break;
+            case "system":
+                break;
+        }
+    }
+
+    //TODO: remove this function to call the one in settingsFragment
+    private final void setAppLocale(String localeCode) {
+        Locale myLocale = new Locale(localeCode);
+        Resources res = getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        Configuration conf = res.getConfiguration();
+        conf.locale = myLocale;
+        res.updateConfiguration(conf, dm);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
     }
 
     @Override

@@ -6,13 +6,18 @@ import android.app.NotificationManager;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -20,6 +25,8 @@ import com.lubenard.digital_wellbeing.DbManager;
 import com.lubenard.digital_wellbeing.NotificationsHandler;
 import com.lubenard.digital_wellbeing.R;
 import com.lubenard.digital_wellbeing.Utils.Utils;
+
+import java.util.Locale;
 
 /**
  * Settings page.
@@ -32,6 +39,26 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings_fragment, rootKey);
         getActivity().setTitle(R.string.settings_fragment_title);
+
+        // Language change listener
+        final Preference language = findPreference("ui_language");
+        language.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                Log.d(TAG, "Language value has changed for " + newValue);
+                switch (newValue.toString()) {
+                    case "en":
+                        setAppLocale("en-us");
+                        break;
+                    case "fr":
+                        setAppLocale("fr");
+                        break;
+                    case "system":
+                        break;
+                }
+                return true;
+            }
+        });
 
         // Theme change listener
         final Preference theme = findPreference("ui_theme");
@@ -135,5 +162,19 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
+    }
+
+    private final void setAppLocale(String localeCode) {
+        Locale myLocale = new Locale(localeCode);
+        Resources res = getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        Configuration conf = res.getConfiguration();
+        conf.locale = myLocale;
+        res.updateConfiguration(conf, dm);
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        SettingsFragment fragment = new SettingsFragment();
+        fragmentTransaction.replace(android.R.id.content, fragment);
+        fragmentTransaction.commit();
     }
 }
