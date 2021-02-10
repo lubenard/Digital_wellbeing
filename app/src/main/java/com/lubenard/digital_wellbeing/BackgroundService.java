@@ -13,6 +13,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 import com.lubenard.digital_wellbeing.Utils.Utils;
 
@@ -172,6 +173,18 @@ public class BackgroundService extends IntentService {
         mReceiver = new ScreenReceiver();
         registerReceiver(mReceiver, filter);
 
+        // Check if this is the 1rst install
+        if (PreferenceManager.getDefaultSharedPreferences(this).
+                getString("install_date", null).equals(todayDate)) {
+            getLaunchedApps();
+
+            for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {
+                screenTimeToday += entry.getValue();
+            }
+            Log.d(TAG, "As this is the 1st day installed, the timer is at least " + screenTimeToday);
+            dbManager.updateScreenTime(screenTimeToday, todayDate);
+        }
+
         // Main loop. This loop register if the screen is on which apps are launched.
         while (true) {
             Log.d(TAG, "Service is up and running, screen is " + ScreenReceiver.isScreenOn + " mTimer vaut " + mTimer);
@@ -180,6 +193,7 @@ public class BackgroundService extends IntentService {
 
             try {
                 if (mTimer == 60) {
+                    todayDate = Utils.getTodayDate();
                     // Every minute, update DB + refresh data on main UI
                     Log.d(TAG, "Today Date = " + todayDate + " screenTimeToday = " + screenTimeToday);
                     screenTimeToday++;

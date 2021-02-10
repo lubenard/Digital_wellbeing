@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 
+import com.lubenard.digital_wellbeing.Utils.Utils;
 import com.lubenard.digital_wellbeing.settings.SettingsFragment;
 
 import java.util.Locale;
@@ -74,6 +75,12 @@ public class LauncherActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        if (PreferenceManager.getDefaultSharedPreferences(this).
+                getString("install_date", null) == null) {
+            PreferenceManager.getDefaultSharedPreferences(this).edit().
+                    putString("install_date", Utils.getTodayDate()).apply();
+        }
+
         checkConfig();
         super.onCreate(savedInstanceState);
 

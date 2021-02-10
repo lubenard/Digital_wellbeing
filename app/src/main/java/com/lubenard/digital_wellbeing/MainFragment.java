@@ -289,6 +289,8 @@ public class MainFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
+                listviewAppPkgHashMap.clear();
+                Log.d(TAG, "listview is CLEARED");
                 getFreshDatas();
                 return true;
             case R.id.action_settings:
