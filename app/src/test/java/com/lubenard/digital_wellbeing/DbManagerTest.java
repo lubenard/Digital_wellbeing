@@ -14,11 +14,6 @@ import org.robolectric.RobolectricTestRunner;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
 @RunWith(RobolectricTestRunner.class)
 public class DbManagerTest {
 
@@ -61,6 +56,16 @@ public class DbManagerTest {
         dbTest.updateScreenTime(1, Utils.getTodayDate());
 
         Assert.assertEquals(1, dbTest.getScreenTime(Utils.getTodayDate()));
+    }
+
+    @Test
+    public void incrementScreenTime() {
+        dbTest.updateScreenTime(10, Utils.getTodayDate());
+
+        Assert.assertEquals(10, dbTest.getScreenTime(Utils.getTodayDate()));
+
+        dbTest.incrementScreenTime(Utils.getTodayDate());
+        Assert.assertEquals(11, dbTest.getScreenTime(Utils.getTodayDate()));
     }
 
     @Test

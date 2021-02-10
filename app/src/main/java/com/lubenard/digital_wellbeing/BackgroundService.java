@@ -175,7 +175,8 @@ public class BackgroundService extends IntentService {
 
         // Check if this is the 1rst install
         if (PreferenceManager.getDefaultSharedPreferences(this).
-                getString("install_date", null).equals(todayDate)) {
+                getString("install_date", null).equals(todayDate)
+           && dbManager.getScreenTime(todayDate) == 0) {
             getLaunchedApps();
 
             for (HashMap.Entry<String, Integer> entry : app_data.entrySet()) {

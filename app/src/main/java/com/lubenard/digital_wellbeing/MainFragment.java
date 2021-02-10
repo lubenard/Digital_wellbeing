@@ -169,7 +169,8 @@ public class MainFragment extends Fragment {
                 if (screenTimeToday > 0) {
                     //Relative percentage, find a more precise way to tell ?
                     listViewElement.setPercentage(Math.round(((float) entry.getValue() / screenTimeToday) * 100));
-                }
+                } else
+                    listViewElement.setPercentage(0);
                 listViewElement.setTimer(entry.getValue());
                 listViewElement.invalidate();
             } else {
@@ -178,7 +179,7 @@ public class MainFragment extends Fragment {
                 listviewAppPkgHashMap.put(entry.getKey(), listViewElement);
                 listViewElement.setApp_name(Utils.getAppName(context, entry.getKey()));
                 if (screenTimeToday > 0)
-                    listViewElement.setPercentage((entry.getValue() / screenTimeToday) * 100);
+                    listViewElement.setPercentage(Math.round(((float) entry.getValue() / screenTimeToday) * 100));
                 else
                     listViewElement.setPercentage(0);
                 listViewElement.setTimer(entry.getValue());
@@ -197,7 +198,6 @@ public class MainFragment extends Fragment {
                     }
                 });
                 mainLinearLayout.addView(listViewElement);
-
             }
         }
     }
@@ -268,6 +268,14 @@ public class MainFragment extends Fragment {
         context.startService(bgService);
     }
 
+    private void clearListView() {
+        Log.d(TAG, "listview is cleared");
+        for (final Map.Entry<String, MainFragmentListview> entry : listviewAppPkgHashMap.entrySet()) {
+            mainLinearLayout.removeView(entry.getValue());
+        }
+        listviewAppPkgHashMap.clear();
+    }
+
     /**
      * Create the 3 grey dots menu (top right)
      * @param menu
@@ -289,8 +297,6 @@ public class MainFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                listviewAppPkgHashMap.clear();
-                Log.d(TAG, "listview is CLEARED");
                 getFreshDatas();
                 return true;
             case R.id.action_settings:
@@ -317,6 +323,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        clearListView();
         getFreshDatas();
         if (clickAboutNbr >= 10) {
             PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("is_easter_unlocked", true).commit();
@@ -328,8 +335,6 @@ public class MainFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        // Destroy ListView to be recreated when onResume is called
-        listviewAppPkgHashMap.clear();
     }
 
     @Override
@@ -340,5 +345,4 @@ public class MainFragment extends Fragment {
         // This fix this issue
         context = ctx;
     }
-
 }
