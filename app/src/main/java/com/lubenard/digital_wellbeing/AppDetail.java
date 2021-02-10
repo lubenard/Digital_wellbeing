@@ -1,5 +1,6 @@
 package com.lubenard.digital_wellbeing;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -22,6 +24,7 @@ import com.lubenard.digital_wellbeing.Utils.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class AppDetail extends Fragment {
     @Override
@@ -40,11 +43,9 @@ public class AppDetail extends Fragment {
         Bundle bundle = this.getArguments();
         String app_pkg = bundle.getString("app_pkg", null);
 
-
         ArrayList<BarEntry> values = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<String>();
         BarDataSet dataSet;
-
 
         getActivity().setTitle(getResources().getString(R.string.details_fragment_title) + " " + Utils.getAppName(getContext(), app_pkg));
 
@@ -66,6 +67,8 @@ public class AppDetail extends Fragment {
 
         int counter = 0;
 
+        String theme_option = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("ui_theme", "dark");
+
         for (HashMap.Entry<String, Integer> oneElemDatas : app_data.entrySet()) {
             // turn your data into Entry objects
             values.add(new BarEntry(counter, oneElemDatas.getValue()));
@@ -75,6 +78,11 @@ public class AppDetail extends Fragment {
         }
 
         XAxis xAxis = chart.getXAxis();
+
+        if (theme_option.equals("dark")) {
+            xAxis.setTextColor(Color.WHITE);
+            chart.getAxisLeft().setTextColor(Color.WHITE);
+        }
 
         // Set customs labels instead of their index
         chart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
@@ -105,6 +113,10 @@ public class AppDetail extends Fragment {
 
         BarData data = new BarData(dataSets);
         data.setValueTextSize(10f);
+
+        if (theme_option.equals("dark"))
+            data.setValueTextColor(Color.WHITE);
+
         data.setBarWidth(0.9f);
 
         chart.setData(data);
