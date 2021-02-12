@@ -13,6 +13,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatDelegate;
@@ -88,9 +90,34 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         Preference export = findPreference("tweaks_export_data");
         export.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(getContext(), BackupAndRestoreFragment.class);
-                startActivity(intent);
+                if (!Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
+                    return false;
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle(R.string.custom_backup_restore_title_alertdialog);
+                final View customLayout = getLayoutInflater().inflate(R.layout.custom_backup_restore_alertdialog, null);
+                builder.setView(customLayout);
+                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(getContext(), BackupAndRestoreFragment.class);
+                        intent.putExtra("mode", 1);
 
+                        boolean isDatasChecked =
+                                ((CheckBox)customLayout.findViewById(R.id.custom_backup_restore_alertdialog_datas)).isChecked();
+                        boolean isSettingsChecked =
+                                ((CheckBox)customLayout.findViewById(R.id.custom_backup_restore_alertdialog_settings)).isChecked();
+
+                        if (!isDatasChecked && !isSettingsChecked)
+                            return;
+
+                        intent.putExtra("shouldBackupRestoreDatas", isDatasChecked);
+                        intent.putExtra("shouldBackupRestoreSettings", isSettingsChecked);
+                        startActivity(intent);
+                    }
+                });
+                builder.setNegativeButton(android.R.string.cancel,null);
+                AlertDialog dialog = builder.create();
+                dialog.show();
                 return true;
             }
         });
@@ -100,7 +127,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         reset.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 new AlertDialog.Builder(getContext())
-                        .setTitle("Delete all your data")
+                        .setTitle(R.string.settings_alertdialog_erase_title)
                         .setMessage("Are you sure you want to delete all your data ? All losses are definitive. Once completed, the app will shut down.")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
