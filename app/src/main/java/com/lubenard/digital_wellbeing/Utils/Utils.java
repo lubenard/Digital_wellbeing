@@ -37,7 +37,11 @@ public class Utils {
         catch (PackageManager.NameNotFoundException e) {
             Log.d(TAG, "icon for " + packageName + " not found");
             e.printStackTrace();
-            return null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                return ctx.getDrawable(android.R.mipmap.sym_def_app_icon);
+            } else {
+                return ctx.getResources().getDrawable(android.R.mipmap.sym_def_app_icon);
+            }
         }
     }
 
@@ -57,7 +61,7 @@ public class Utils {
         } catch (final PackageManager.NameNotFoundException e) {
             ai = null;
         }
-        return (String) (ai != null ? pm.getApplicationLabel(ai) : "(unknown)");
+        return (String) (ai != null ? pm.getApplicationLabel(ai) : packageName);
     }
 
     /**

@@ -12,7 +12,7 @@
 
 		<LinearLayout
 			android:layout_width="match_parent"
-			android:layout_height="match_parent"
+			android:layout_height="wrap_content"
 			android:layout_marginTop="30dp"
 			android:orientation="vertical">
 
@@ -29,10 +29,10 @@
 					android:contentDescription="@string/icon_of_the_app_main_listview_on_elem" />
 
 				<LinearLayout
-					android:layout_width="match_parent"
+					android:layout_width="wrap_content"
 					android:layout_height="match_parent"
 					android:orientation="vertical"
-					android:layout_marginLeft="10dp">
+					android:layout_marginStart="10dp">
 
 					<TextView
 						android:id="@+id/details_app_name"
@@ -50,6 +50,15 @@
 						android:text="com.package.example"
 						android:layout_marginRight="10dp"/>
 				</LinearLayout>
+				<TextView
+					android:id="@+id/details_app_installed"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/details_app_uninstalled"
+					android:textStyle="bold"
+					android:layout_marginLeft="30dp"
+					android:textColor="@android:color/holo_red_dark"
+					android:visibility="gone"/>
 			</LinearLayout>
 
 			<TextView

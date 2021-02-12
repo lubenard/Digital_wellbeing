@@ -41,4 +41,5 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
     testImplementation 'org.robolectric:robolectric:4.4'
+    testImplementation 'androidx.fragment:fragment-testing:1.2.2'
 }

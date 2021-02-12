@@ -208,7 +208,7 @@ public class DbManager extends SQLiteOpenHelper {
     /**
      * Get the number of unlocks for a specific date
      * @param date date to which you want to get the datas
-     * @return The number of unlocks is fetched from the DB
+     * @return The number of u(TextView)nlocks is fetched from the DB
      */
     public short getUnlocks(String date) {
         Log.d(TAG, "getUnlocks request made for date: " + date);

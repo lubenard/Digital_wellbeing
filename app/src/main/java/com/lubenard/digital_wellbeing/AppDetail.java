@@ -1,5 +1,6 @@
 package com.lubenard.digital_wellbeing;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,7 +25,6 @@ import com.lubenard.digital_wellbeing.Utils.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class AppDetail extends Fragment {
     @Override
@@ -43,23 +43,33 @@ public class AppDetail extends Fragment {
         Bundle bundle = this.getArguments();
         String app_pkg = bundle.getString("app_pkg", null);
 
+        //TODO: manange if app_pkg is null better, by displaying an error and returning to main fragment
+
+        Context ctx = getContext();
+
+        String app_name = Utils.getAppName(ctx, app_pkg);
+
         ArrayList<BarEntry> values = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<String>();
         BarDataSet dataSet;
 
-        getActivity().setTitle(getResources().getString(R.string.details_fragment_title) + " " + Utils.getAppName(getContext(), app_pkg));
+        getActivity().setTitle(getResources().getString(R.string.details_fragment_title) + " " + app_name);
 
         //((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (app_pkg != null) {
-            ((TextView)view.findViewById(R.id.details_app_name)).setText(Utils.getAppName(getContext(), app_pkg));
+            ((TextView)view.findViewById(R.id.details_app_name)).setText(app_name);
             ((TextView)view.findViewById(R.id.details_app_pkg)).setText(app_pkg);
-            ((ImageView)view.findViewById(R.id.details_app_icon)).setImageDrawable(Utils.getIconFromPkgName(getContext(), app_pkg));
+            ((ImageView)view.findViewById(R.id.details_app_icon)).setImageDrawable(Utils.getIconFromPkgName(ctx, app_pkg));
+        }
+
+        if (app_name.equals(app_pkg)) {
+            view.findViewById(R.id.details_app_installed).setVisibility(View.VISIBLE);
         }
 
         // I am not a big fan of recreating a Object for each Fragment.
         // Maybe make DBManager class functions static ?
-        DbManager dbManager = new DbManager(getContext());
+        DbManager dbManager = new DbManager(ctx);
 
         //Not a big fan of calling each time getTodayDate.
         // Find a way to make this a global variable instead ?
@@ -67,7 +77,7 @@ public class AppDetail extends Fragment {
 
         int counter = 0;
 
-        String theme_option = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("ui_theme", "dark");
+        String theme_option = PreferenceManager.getDefaultSharedPreferences(ctx).getString("ui_theme", "dark");
 
         for (HashMap.Entry<String, Integer> oneElemDatas : app_data.entrySet()) {
             // turn your data into Entry objects
