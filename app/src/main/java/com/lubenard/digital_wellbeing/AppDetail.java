@@ -1,6 +1,7 @@
 package com.lubenard.digital_wellbeing;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
@@ -43,7 +45,20 @@ public class AppDetail extends Fragment {
         Bundle bundle = this.getArguments();
         String app_pkg = bundle.getString("app_pkg", null);
 
-        //TODO: manange if app_pkg is null better, by displaying an error and returning to main fragment
+        if (app_pkg == null) {
+            // This alert should never be saw, but just in case
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+            alertDialogBuilder.setTitle(android.R.string.dialog_alert_title);
+            alertDialogBuilder.setMessage(R.string.details_error_app_pkg_null);
+            alertDialogBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // Get back to main fragment
+                            MainFragment mainFragment = new MainFragment();
+                            getActivity().getSupportFragmentManager().beginTransaction()
+                                    .replace(android.R.id.content, mainFragment, null).commit();
+                        }
+            });
+        }
 
         Context ctx = getContext();
 
@@ -57,11 +72,9 @@ public class AppDetail extends Fragment {
 
         //((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (app_pkg != null) {
-            ((TextView)view.findViewById(R.id.details_app_name)).setText(app_name);
-            ((TextView)view.findViewById(R.id.details_app_pkg)).setText(app_pkg);
-            ((ImageView)view.findViewById(R.id.details_app_icon)).setImageDrawable(Utils.getIconFromPkgName(ctx, app_pkg));
-        }
+        ((TextView)view.findViewById(R.id.details_app_name)).setText(app_name);
+        ((TextView)view.findViewById(R.id.details_app_pkg)).setText(app_pkg);
+        ((ImageView)view.findViewById(R.id.details_app_icon)).setImageDrawable(Utils.getIconFromPkgName(ctx, app_pkg));
 
         if (app_name.equals(app_pkg)) {
             view.findViewById(R.id.details_app_installed).setVisibility(View.VISIBLE);

@@ -54,4 +54,5 @@
 	<string name="easter_discovered">Well played ! You discovered the easter egg !</string>
     <string name="origin_icon">The icon of this app is coming from flaticon.com</string>
 	<string name="toast_error_custom_path_backup">Failed to open a file explorer. Save will be at default location</string>
+    <string name="details_error_app_pkg_null">Oops ! There is an error. Please try again later</string>
 </resources>
