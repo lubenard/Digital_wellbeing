@@ -86,9 +86,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
-        // reset preference click listener
-        Preference export = findPreference("tweaks_export_data");
-        export.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        Preference exportXML = findPreference("tweaks_export_data_xml");
+        exportXML.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 if (!Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
                     return false;
@@ -118,6 +117,19 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 builder.setNegativeButton(android.R.string.cancel,null);
                 AlertDialog dialog = builder.create();
                 dialog.show();
+                return true;
+            }
+        });
+
+        Preference exportSQLITE = findPreference("tweaks_export_data_sqlite");
+        exportSQLITE.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                if (!Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
+                    return false;
+
+                Intent intent = new Intent(getContext(), BackupAndRestoreFragment.class);
+                intent.putExtra("mode", 2);
+                startActivity(intent);
                 return true;
             }
         });

@@ -37,9 +37,14 @@
             android:defaultValue="false"/>
 
         <Preference
-            app:key="tweaks_export_data"
-            app:title="Export your data"
+            app:key="tweaks_export_data_xml"
+            app:title="Export your data in XML"
             app:summary="Export your data in XML format"/>
+
+        <Preference
+            app:key="tweaks_export_data_sqlite"
+            app:title="Export your data in SQLITE"
+            app:summary="Export your data in SQLITE format"/>
 
         <Preference
             app:key="tweaks_erase_data"

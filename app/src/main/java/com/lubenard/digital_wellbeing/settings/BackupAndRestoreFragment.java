@@ -1,6 +1,5 @@
 package com.lubenard.digital_wellbeing.settings;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -12,18 +11,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
-import com.github.mikephil.charting.data.BarEntry;
 import com.lubenard.digital_wellbeing.DbManager;
 import com.lubenard.digital_wellbeing.R;
-import com.lubenard.digital_wellbeing.Utils.Utils;
 import com.lubenard.digital_wellbeing.Utils.XmlWriter;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -35,6 +32,7 @@ public class BackupAndRestoreFragment extends Activity {
     public static final String TAG = "BackupAndRestore";
 
     private String mode;
+    private int typeOfDatas;
     private AlertDialog dialog;
     private boolean shouldBackupRestoreDatas;
     private boolean shouldBackupRestoreSettings;
@@ -42,29 +40,50 @@ public class BackupAndRestoreFragment extends Activity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        int mode = getIntent().getIntExtra("mode", -1);
+        typeOfDatas = getIntent().getIntExtra("mode", -1);
         shouldBackupRestoreDatas = getIntent().getBooleanExtra("shouldBackupRestoreDatas", false);
         shouldBackupRestoreSettings = getIntent().getBooleanExtra("shouldBackupRestoreSettings", false);
-        if (mode == 1)
+        if (typeOfDatas == 1)
             startBackupIntoXML();
+        else if (typeOfDatas == 2)
+            startBackupIntoSQLITE();
     }
 
-    public boolean startBackupIntoXML() {
+    private boolean startBackupIntoXML() {
         mode = "backup";
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Intent dataToFileChooser = new Intent(Intent.ACTION_CREATE_DOCUMENT);
             dataToFileChooser.setType("text/xml");
-            try {
-                startActivityForResult(dataToFileChooser, 1);
-            } catch (ActivityNotFoundException e) {
-                Log.w(TAG, "Failed to open a file explorer. Save will be at default location");
-                Toast.makeText(this, R.string.toast_error_custom_path_backup, Toast.LENGTH_LONG).show();
-            }
+            dataToFileChooser.putExtra(Intent.EXTRA_TITLE, "myDatas.xml");
+            launchIntent(dataToFileChooser);
         } else {
             Log.w(TAG, "Failed to open a file explorer. Save will be at default location");
             Toast.makeText(this, R.string.toast_error_custom_path_backup, Toast.LENGTH_LONG).show();
         }
         return true;
+    }
+
+    private boolean startBackupIntoSQLITE() {
+        mode = "backup";
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Intent dataToFileChooser = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            dataToFileChooser.setType("application/vnd.sqlite3");
+            dataToFileChooser.putExtra(Intent.EXTRA_TITLE, "myDatas.db");
+            launchIntent(dataToFileChooser);
+        } else {
+            Log.w(TAG, "Failed to open a file explorer. Save will be at default location");
+            Toast.makeText(this, R.string.toast_error_custom_path_backup, Toast.LENGTH_LONG).show();
+        }
+        return true;
+    }
+
+    private void launchIntent(Intent dataToFileChooser) {
+        try {
+            startActivityForResult(dataToFileChooser, 1);
+        } catch (ActivityNotFoundException e) {
+            Log.w(TAG, "Failed to open a file explorer. Save will be at default location");
+            Toast.makeText(this, R.string.toast_error_custom_path_backup, Toast.LENGTH_LONG).show();
+        }
     }
 
     private void createAlertDialog() {
@@ -84,7 +103,7 @@ public class BackupAndRestoreFragment extends Activity {
         dialog.show();
     }
 
-    private void saveSettings(XmlWriter xmlWriter) {
+    private void saveSettingsIntoXml(XmlWriter xmlWriter) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         try {
@@ -108,7 +127,7 @@ public class BackupAndRestoreFragment extends Activity {
         }
     }
 
-    private void saveDatas(XmlWriter xmlWriter) {
+    private void saveDatasIntoXml(XmlWriter xmlWriter) {
         DbManager dbManager = new DbManager(this);
         ArrayList<String> arrayOfApps = dbManager.getAllApps();
 
@@ -160,6 +179,27 @@ public class BackupAndRestoreFragment extends Activity {
         }
     }
 
+    public void saveDatasIntoDB(OutputStream outputStream) {
+        try {
+            File dbFile = new File(this.getDatabasePath("dataDB").getAbsolutePath());
+            FileInputStream fis = new FileInputStream(dbFile);
+
+            // Transfer bytes from the inputfile to the outputfile
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = fis.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+            // Close the streams
+            outputStream.flush();
+            outputStream.close();
+            fis.close();
+
+        } catch (IOException e) {
+            Log.e("dbBackup:", e.getMessage());
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -170,14 +210,17 @@ public class BackupAndRestoreFragment extends Activity {
                     createAlertDialog();
                     OutputStream outputStream = getContentResolver().openOutputStream(Uri.parse(data.getDataString()));
 
-                    XmlWriter xmlWriter = new XmlWriter(outputStream);
+                    if (typeOfDatas == 1) {
+                        XmlWriter xmlWriter = new XmlWriter(outputStream);
+                        if (shouldBackupRestoreDatas)
+                            saveDatasIntoXml(xmlWriter);
+                        if (shouldBackupRestoreSettings)
+                            saveSettingsIntoXml(xmlWriter);
+                        xmlWriter.close();
+                    } else if (typeOfDatas == 2) {
+                        saveDatasIntoDB(outputStream);
+                    }
 
-                    if (shouldBackupRestoreDatas)
-                        saveDatas(xmlWriter);
-                    if (shouldBackupRestoreSettings)
-                        saveSettings(xmlWriter);
-
-                    xmlWriter.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -185,6 +228,8 @@ public class BackupAndRestoreFragment extends Activity {
                 dialog.dismiss();
                 finish();
             }
+        } else if (resultCode != Activity.RESULT_OK) {
+            finish();
         }
     }
 }
