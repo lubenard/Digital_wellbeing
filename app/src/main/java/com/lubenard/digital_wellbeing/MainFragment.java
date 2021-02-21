@@ -6,6 +6,7 @@ import androidx.preference.PreferenceManager;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -266,6 +267,10 @@ public class MainFragment extends Fragment {
             bgService.putExtra("messenger", new Messenger(handler));
         }
         context.startService(bgService);
+
+        if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("is_easter_unlocked", false)) {
+            mainPieChart.setRotationEnabled(true);
+        }
     }
 
     private void clearListView() {
@@ -323,10 +328,11 @@ public class MainFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         clearListView();
         getFreshDatas();
-        if (clickAboutNbr >= 10) {
-            PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("is_easter_unlocked", true).commit();
+        if (clickAboutNbr >= 5 && !sharedPreferences.getBoolean("is_easter_unlocked", false)) {
+            sharedPreferences.edit().putBoolean("is_easter_unlocked", true).apply();
             Toast.makeText(context, context.getResources().getText(R.string.easter_discovered), Toast.LENGTH_SHORT).show();
             mainPieChart.setRotationEnabled(true);
         }
