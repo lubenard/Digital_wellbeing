@@ -37,6 +37,11 @@
             android:defaultValue="false"/>
 
         <Preference
+            app:key="tweaks_import_data_xml"
+            app:title="Import your data in XML"
+            app:summary="Import your data in XML format"/>
+
+        <Preference
             app:key="tweaks_export_data_xml"
             app:title="Export your data in XML"
             app:summary="Export your data in XML format"/>

@@ -1,21 +1,19 @@
 package com.lubenard.digital_wellbeing.settings;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
-import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentManager;
@@ -36,11 +34,13 @@ import java.util.Locale;
 public class SettingsFragment extends PreferenceFragmentCompat {
 
     public static final String TAG = "SettingsFragment";
+    private static Activity activity;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings_fragment, rootKey);
-        getActivity().setTitle(R.string.settings_fragment_title);
+        activity = getActivity();
+        activity.setTitle(R.string.settings_fragment_title);
 
         // Language change listener
         final Preference language = findPreference("ui_language");
@@ -86,13 +86,52 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
+        Preference importXML = findPreference("tweaks_import_data_xml");
+        importXML.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                if (!Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
+                    return false;
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle(R.string.custom_restore_title_alertdialog);
+                final View customLayout = getLayoutInflater().inflate(R.layout.custom_backup_restore_alertdialog, null);
+
+                ((CheckBox)customLayout.findViewById(R.id.custom_backup_restore_alertdialog_datas)).setText(R.string.custom_restore_alertdialog_save_datas);
+                ((CheckBox)customLayout.findViewById(R.id.custom_backup_restore_alertdialog_settings)).setText(R.string.custom_restore_alertdialog_save_settings);
+
+                builder.setView(customLayout);
+                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(getContext(), BackupAndRestoreFragment.class);
+                        intent.putExtra("mode", 3);
+
+                        boolean isDatasChecked =
+                                ((CheckBox)customLayout.findViewById(R.id.custom_backup_restore_alertdialog_datas)).isChecked();
+                        boolean isSettingsChecked =
+                                ((CheckBox)customLayout.findViewById(R.id.custom_backup_restore_alertdialog_settings)).isChecked();
+
+                        if (!isDatasChecked && !isSettingsChecked)
+                            return;
+
+                        intent.putExtra("shouldBackupRestoreDatas", isDatasChecked);
+                        intent.putExtra("shouldBackupRestoreSettings", isSettingsChecked);
+                        startActivity(intent);
+                    }
+                });
+                builder.setNegativeButton(android.R.string.cancel,null);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                return true;
+            }
+        });
+
         Preference exportXML = findPreference("tweaks_export_data_xml");
         exportXML.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 if (!Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
                     return false;
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle(R.string.custom_backup_restore_title_alertdialog);
+                builder.setTitle(R.string.custom_backup_title_alertdialog);
                 final View customLayout = getLayoutInflater().inflate(R.layout.custom_backup_restore_alertdialog, null);
                 builder.setView(customLayout);
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -201,6 +240,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
+    }
+
+    public static void restartActivity() {
+        activity.recreate();
     }
 
     private final void setAppLocale(String localeCode) {

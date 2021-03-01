@@ -53,10 +53,14 @@
     <string name="main_screen_option_refresh">Refresh datas</string>
 	<string name="easter_discovered">Well played ! You discovered the easter egg !</string>
     <string name="origin_icon">The icon of this app is coming from flaticon.com</string>
-	<string name="toast_error_custom_path_backup">Failed to open a file explorer. Save will be at default location</string>
+	<string name="toast_error_custom_path_backup_restore_android_too_old">Android version too old. Save will be at default location</string>
+    <string name="toast_error_custom_path_backup_restore_fail">Failed to open a file explorer. Save will be at default location</string>
     <string name="details_error_app_pkg_null">Oops ! There is an error. Please try again later</string>
-    <string name="custom_backup_restore_alertdialog_save_datas">Save my datas</string>
-    <string name="custom_backup_restore_alertdialog_save_settings">Save my settings</string>
-    <string name="custom_backup_restore_title_alertdialog">Choose what you want to get</string>
+    <string name="custom_backup_alertdialog_save_datas">Save my datas</string>
+    <string name="custom_backup_alertdialog_save_settings">Save my settings</string>
+    <string name="custom_restore_alertdialog_save_datas">Restore my datas</string>
+    <string name="custom_restore_alertdialog_save_settings">Restore my settings</string>
+    <string name="custom_backup_title_alertdialog">Choose what you want to export</string>
+    <string name="custom_restore_title_alertdialog">Choose what you want to restore</string>
     <string name="settings_alertdialog_erase_title">Erase all your datas ?</string>
 </resources>

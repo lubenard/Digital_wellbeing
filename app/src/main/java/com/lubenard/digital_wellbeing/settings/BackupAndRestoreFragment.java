@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Xml;
 import android.view.View;
 import android.widget.Toast;
 
@@ -19,17 +20,27 @@ import com.lubenard.digital_wellbeing.DbManager;
 import com.lubenard.digital_wellbeing.R;
 import com.lubenard.digital_wellbeing.Utils.XmlWriter;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+
+import java.util.Currency;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public class BackupAndRestoreFragment extends Activity {
 
     public static final String TAG = "BackupAndRestore";
+    private static final int MODE_NBR_UNLOCKS = 0;
+    private static final int MODE_SCREENTIME = 1;
+    private static final int MODE_APPTIME = 2;
 
     private String mode;
     private int typeOfDatas;
@@ -47,6 +58,8 @@ public class BackupAndRestoreFragment extends Activity {
             startBackupIntoXML();
         else if (typeOfDatas == 2)
             startBackupIntoSQLITE();
+        else if (typeOfDatas == 3)
+            startRestoreFromXML();
     }
 
     private boolean startBackupIntoXML() {
@@ -58,7 +71,7 @@ public class BackupAndRestoreFragment extends Activity {
             launchIntent(dataToFileChooser);
         } else {
             Log.w(TAG, "Failed to open a file explorer. Save will be at default location");
-            Toast.makeText(this, R.string.toast_error_custom_path_backup, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.toast_error_custom_path_backup_restore_android_too_old, Toast.LENGTH_LONG).show();
         }
         return true;
     }
@@ -71,8 +84,22 @@ public class BackupAndRestoreFragment extends Activity {
             dataToFileChooser.putExtra(Intent.EXTRA_TITLE, "myDatas.db");
             launchIntent(dataToFileChooser);
         } else {
-            Log.w(TAG, "Failed to open a file explorer. Save will be at default location");
-            Toast.makeText(this, R.string.toast_error_custom_path_backup, Toast.LENGTH_LONG).show();
+            Log.w(TAG, "Android version too old. Save will be at default location");
+            Toast.makeText(this, R.string.toast_error_custom_path_backup_restore_android_too_old, Toast.LENGTH_LONG).show();
+        }
+        return true;
+    }
+
+    private boolean startRestoreFromXML() {
+        mode = "restore";
+        Log.d(TAG, "startRestoreFromXML");
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Intent dataToFileChooser = new Intent(Intent.ACTION_GET_CONTENT);
+            dataToFileChooser.setType("text/xml");
+            launchIntent(dataToFileChooser);
+        } else {
+            Log.w(TAG, "Android version too old. Save will be at default location");
+            Toast.makeText(this, R.string.toast_error_custom_path_backup_restore_android_too_old, Toast.LENGTH_LONG).show();
         }
         return true;
     }
@@ -82,7 +109,7 @@ public class BackupAndRestoreFragment extends Activity {
             startActivityForResult(dataToFileChooser, 1);
         } catch (ActivityNotFoundException e) {
             Log.w(TAG, "Failed to open a file explorer. Save will be at default location");
-            Toast.makeText(this, R.string.toast_error_custom_path_backup, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.toast_error_custom_path_backup_restore_fail, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -160,7 +187,8 @@ public class BackupAndRestoreFragment extends Activity {
             xmlWriter.writeEntity("appTime");
 
             for (int i = 0; i != arrayOfApps.size(); i++) {
-                xmlWriter.writeEntity(arrayOfApps.get(i));
+                xmlWriter.writeEntity("app");
+                xmlWriter.writeAttribute("name", arrayOfApps.get(i));
                 LinkedHashMap<String, Integer>  datas_appTime = dbManager.getDetailsForApp(arrayOfApps.get(i), 0, true);
 
                 for (HashMap.Entry<String, Integer> one_data : datas_appTime.entrySet()) {
@@ -204,10 +232,10 @@ public class BackupAndRestoreFragment extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null && data.getDataString() != null) {
+            createAlertDialog();
             if (mode.equals("backup")) {
                 Log.d(TAG, "ActivityResult backup at path: " + data.getDataString());
                 try {
-                    createAlertDialog();
                     OutputStream outputStream = getContentResolver().openOutputStream(Uri.parse(data.getDataString()));
 
                     if (typeOfDatas == 1) {
@@ -222,14 +250,119 @@ public class BackupAndRestoreFragment extends Activity {
                     }
 
                 } catch (IOException e) {
+                    Log.d(TAG, "something failed during the save of the datas");
                     e.printStackTrace();
                 }
                 Toast.makeText(this, "Success to save the datas", Toast.LENGTH_LONG).show();
-                dialog.dismiss();
-                finish();
+            } else if (mode.equals("restore")) {
+                Log.d(TAG, "ActivityResult restore from path: " + data.getDataString());
+                try {
+                    InputStream inputStream = getContentResolver().openInputStream(Uri.parse((data.getDataString())));
+
+                    if (shouldBackupRestoreDatas)
+                        restoreDatasFromXml(inputStream);
+                    if (shouldBackupRestoreSettings)
+                        restoreSettingsFromXml(inputStream);
+
+                } catch (IOException e) {
+                    Log.d(TAG, "something failed during the restore of the datas");
+                    e.printStackTrace();
+                }
             }
-        } else if (resultCode != Activity.RESULT_OK) {
+            dialog.dismiss();
+            finish();
+        } else {
             finish();
         }
+    }
+
+    private void restoreDatasFromXml(InputStream inputStream) {
+        try {
+            XmlPullParserFactory xmlFactoryObject = XmlPullParserFactory.newInstance();
+            XmlPullParser myParser = xmlFactoryObject.newPullParser();
+            int currentState = -1;
+            DbManager dbManager = new DbManager(getApplicationContext());
+            String currentDate = null;
+            String currentApp = null;
+
+            myParser.setInput(inputStream, null);
+
+            int eventType = myParser.getEventType();
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_TAG) {
+                    if (myParser.getName().equals("numberOfUnlocks")) {
+                        currentState = MODE_NBR_UNLOCKS;
+                        Log.d(TAG, "Actually into MODE_NBR_UNLOCKS");
+                    }
+                    else if (myParser.getName().equals("screenTime")) {
+                        currentState = MODE_SCREENTIME;
+                        Log.d(TAG, "Actually into MODE_SCREENTIME");
+                    }
+                    else if (myParser.getName().equals("appTime")) {
+                        currentState = MODE_APPTIME;
+                        Log.d(TAG, "Actually into MODE_APPTIME");
+                    }
+                    if (currentState == MODE_APPTIME && myParser.getName().equals("app")) {
+                        currentApp = myParser.getAttributeValue(null, "name");
+                        Log.d(TAG, "Current app is " + currentApp);
+                    }
+                    if (myParser.getName().equals("item")) {
+                        currentDate = myParser.getAttributeValue(null, "date");
+                        if (currentState == MODE_NBR_UNLOCKS && currentDate != null) {
+                            myParser.next();
+                            dbManager.updateUnlocks(Integer.parseInt(myParser.getText()), currentDate);
+                        }
+                        if (currentState == MODE_SCREENTIME && currentDate != null) {
+                            myParser.next();
+                            dbManager.updateScreenTime(Integer.parseInt(myParser.getText()), currentDate);
+                        }
+                        if (currentState == MODE_APPTIME && currentDate != null) {
+                            myParser.next();
+                            HashMap hashMap = new HashMap<String, Integer>();
+                            hashMap.put(currentApp, Integer.parseInt(myParser.getText()));
+                            dbManager.updateAppData(hashMap, currentDate);
+                        }
+                    }
+                }
+                eventType = myParser.next();
+            }
+        } catch (XmlPullParserException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // TODO: OPTIMIZE THIS FUNCTION
+    private void restoreSettingsFromXml(InputStream inputStream) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        try {
+            XmlPullParserFactory xmlFactoryObject = XmlPullParserFactory.newInstance();
+            XmlPullParser myParser = xmlFactoryObject.newPullParser();
+
+            myParser.setInput(inputStream, null);
+
+            int eventType = myParser.getEventType();
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_TAG) {
+                   if (myParser.getName().equals("ui_language")) {
+                       myParser.next();
+                       Log.d(TAG, "ui_language setting = " + myParser.getText());
+                       preferences.edit().putString("ui_language", myParser.getText()).apply();
+                   } else if (myParser.getName().equals("ui_theme")) {
+                       myParser.next();
+                       Log.d(TAG, "ui_theme setting = " + myParser.getText());
+                       preferences.edit().putString("ui_theme", myParser.getText()).apply();
+                   } else if (myParser.getName().equals("tweaks_permanent_notification")) {
+                       myParser.next();
+                       Log.d(TAG, "tweaks_permanent_notification setting = " + myParser.getText());
+                       preferences.edit().putBoolean("tweaks_permanent_notification", Boolean.parseBoolean(myParser.getText())).apply();
+                   }
+                }
+                eventType = myParser.next();
+            }
+        } catch (XmlPullParserException | IOException e) {
+            e.printStackTrace();
+        }
+        // Recreate activity once all settings have been restored
+        SettingsFragment.restartActivity();
     }
 }
