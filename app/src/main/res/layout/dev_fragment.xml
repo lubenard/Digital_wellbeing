@@ -69,4 +69,15 @@
 		android:layout_height="wrap_content"
 		android:layout_gravity="center"
 		android:text="Remove 1 unlock to today's date" />
+
+	<View style="@style/Divider" />
+
+	<Button
+		android:id="@+id/dev_send_test_notif"
+		android:layout_marginTop="30dp"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:text="Send test Notification on the normal channel" />
+
 </LinearLayout>

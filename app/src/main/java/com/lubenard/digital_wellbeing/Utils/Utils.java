@@ -16,6 +16,8 @@ import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
+import com.lubenard.digital_wellbeing.R;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -140,5 +142,9 @@ public class Utils {
                 foregroundApp = foregroundAppPackageInfo.applicationInfo.packageName;
         }
         return foregroundApp;
+    }
+
+    public static String formatTimeSpent(int timeInMinute) {
+        return String.format("%d:%02d", timeInMinute / 60, timeInMinute % 60);
     }
 }

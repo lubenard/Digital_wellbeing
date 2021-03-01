@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Xml;
 import android.view.View;
 import android.widget.Toast;
 
@@ -31,7 +30,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
-import java.util.Currency;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -145,7 +143,15 @@ public class BackupAndRestoreFragment extends Activity {
             xmlWriter.endEntity();
 
             xmlWriter.writeEntity("tweaks_permanent_notification");
-            xmlWriter.writeText(String.valueOf(preferences.getBoolean("tweaks_permanent_notification", false)));
+            xmlWriter.writeText(String.valueOf(preferences.getBoolean("datas_permanent_notification", false)));
+            xmlWriter.endEntity();
+
+            xmlWriter.writeEntity("tweaks_reminder_notif_enable");
+            xmlWriter.writeText(String.valueOf(preferences.getBoolean("tweaks_reminder_notif_enable", false)));
+            xmlWriter.endEntity();
+
+            xmlWriter.writeEntity("tweaks_reminder_notif_time");
+            xmlWriter.writeText(preferences.getString("tweaks_reminder_notif_time", "00:00"));
             xmlWriter.endEntity();
 
             xmlWriter.endEntity();
@@ -351,10 +357,10 @@ public class BackupAndRestoreFragment extends Activity {
                        myParser.next();
                        Log.d(TAG, "ui_theme setting = " + myParser.getText());
                        preferences.edit().putString("ui_theme", myParser.getText()).apply();
-                   } else if (myParser.getName().equals("tweaks_permanent_notification")) {
+                   } else if (myParser.getName().equals("datas_permanent_notification")) {
                        myParser.next();
-                       Log.d(TAG, "tweaks_permanent_notification setting = " + myParser.getText());
-                       preferences.edit().putBoolean("tweaks_permanent_notification", Boolean.parseBoolean(myParser.getText())).apply();
+                       Log.d(TAG, "datas_permanent_notification setting = " + myParser.getText());
+                       preferences.edit().putBoolean("datas_permanent_notification", Boolean.parseBoolean(myParser.getText())).apply();
                    }
                 }
                 eventType = myParser.next();

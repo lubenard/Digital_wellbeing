@@ -92,8 +92,8 @@ public class MainFragment extends Fragment {
      */
     @SuppressLint("DefaultLocale")
     public void updateTextViewScreenTime() {
-        mainPieChart.setCenterText(String.format("%s\n%d:%02d", context.getResources().getString(R.string.main_textView_screen_time),
-                screenTimeToday / 60, screenTimeToday % 60));
+        mainPieChart.setCenterText(String.format("%s\n%s", context.getResources().getString(R.string.main_textView_screen_time),
+                Utils.formatTimeSpent(screenTimeToday)));
     }
 
     /**

@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.lubenard.digital_wellbeing.DbManager;
+import com.lubenard.digital_wellbeing.NotificationsHandler;
 import com.lubenard.digital_wellbeing.R;
 import com.lubenard.digital_wellbeing.Utils.Utils;
 
@@ -37,6 +38,8 @@ public class DevFragment extends Fragment {
 
         Button add1Unlock = view.findViewById(R.id.dev_add_1_unlock);
         Button rm1Unlock = view.findViewById(R.id.dev_rm_1_unlock);
+
+        Button sendNormalNotif = view.findViewById(R.id.dev_send_test_notif);
 
         final String todayDate = Utils.getTodayDate();
         final DbManager dbManager = new DbManager(getContext());
@@ -99,5 +102,15 @@ public class DevFragment extends Fragment {
                 Toast.makeText(getContext(), "Unlocks are now " + newUnlockNumber, Toast.LENGTH_SHORT).show();
             }
         });
+
+        sendNormalNotif.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new NotificationsHandler().sendNormalNotification(getContext(), "Test Notif", "This is a test notif!",
+                        R.drawable.baseline_settings_white_48);
+            }
+        });
+
+
     }
 }

@@ -46,7 +46,9 @@
 
     <!-- Notification strings -->
     <string name="notif_permanent_channel_desc">Channel used to send ONLY the permanent notification</string>
+    <string name="notif_normal_channel_desc">Channel used to send normal notifications such as reminder, etc...</string>
     <string name="notif_permanent_name">Permanent notification</string>
+    <string name="notif_normal_name">Normal notification</string>
     <string name="notif_permanent_notif_desc">is running in background!</string>
 
     <!-- Miscellaneous -->
@@ -62,5 +64,6 @@
     <string name="custom_restore_alertdialog_save_settings">Restore my settings</string>
     <string name="custom_backup_title_alertdialog">Choose what you want to export</string>
     <string name="custom_restore_title_alertdialog">Choose what you want to restore</string>
+    <string name="custom_daily_reminder_title_alertdialog">When do you want to get the notification ?</string>
     <string name="settings_alertdialog_erase_title">Erase all your datas ?</string>
 </resources>

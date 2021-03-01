@@ -2,30 +2,38 @@ package com.lubenard.digital_wellbeing.settings;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.TimePicker;
 
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 
 import com.lubenard.digital_wellbeing.DbManager;
+import com.lubenard.digital_wellbeing.NotificationBoradcastReceiver;
 import com.lubenard.digital_wellbeing.NotificationsHandler;
 import com.lubenard.digital_wellbeing.R;
 import com.lubenard.digital_wellbeing.Utils.Utils;
 
+import java.util.Calendar;
 import java.util.Locale;
 
 /**
@@ -86,7 +94,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
-        Preference importXML = findPreference("tweaks_import_data_xml");
+        Preference importXML = findPreference("datas_import_data_xml");
         importXML.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 if (!Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
@@ -125,7 +133,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
-        Preference exportXML = findPreference("tweaks_export_data_xml");
+        Preference exportXML = findPreference("datas_export_data_xml");
         exportXML.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 if (!Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
@@ -160,7 +168,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
-        Preference exportSQLITE = findPreference("tweaks_export_data_sqlite");
+        Preference exportSQLITE = findPreference("datas_export_data_sqlite");
         exportSQLITE.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 if (!Utils.checkOrRequestPerm(getActivity(), getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
@@ -174,7 +182,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         });
 
         // reset preference click listener
-        Preference reset = findPreference("tweaks_erase_data");
+        Preference reset = findPreference("datas_erase_data");
         reset.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 new AlertDialog.Builder(getContext())
@@ -211,6 +219,64 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     NotificationManager mNotificationManager = (NotificationManager) getContext().getSystemService(getContext().NOTIFICATION_SERVICE);
                     Log.d(TAG, "permanent notif is false");
                     mNotificationManager.cancel(0);
+                }
+                return true;
+            }
+        });
+
+        //Permanent notif change listener
+        final Preference reminderNotifEnable = findPreference("tweaks_reminder_notif_enable");
+        reminderNotifEnable.setSummary(String.format("Currently, %s", PreferenceManager.getDefaultSharedPreferences(getContext()).getString("tweaks_reminder_notif_time", "not set")));
+        reminderNotifEnable.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(final Preference preference, Object newValue) {
+                Log.d(TAG, "reminder notif enable value has changed for " + newValue);
+
+                if (newValue.toString().equals("true")) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setTitle(R.string.custom_daily_reminder_title_alertdialog);
+                    final View customLayout = getLayoutInflater().inflate(R.layout.custom_daily_reminder_time_picker, null);
+                    final TimePicker timePicker = customLayout.findViewById(R.id.daily_reminder_timePicker);
+                    timePicker.setIs24HourView(true);
+                    builder.setView(customLayout);
+                    builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            int hour, minute;
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                                hour = timePicker.getHour();
+                                minute = timePicker.getMinute();
+                            }
+                            else {
+                                hour = timePicker.getCurrentHour();
+                                minute = timePicker.getCurrentMinute();
+                            }
+                            Log.d(TAG, "Hour " + hour + " Mn " + minute);
+                            String formattedString = String.format("%d:%d", hour, minute);
+                            PreferenceManager.getDefaultSharedPreferences(getContext()).edit().
+                                    putString("tweaks_reminder_notif_time", formattedString).apply();
+
+                            reminderNotifEnable.setSummary(String.format("Currently, %s", PreferenceManager.getDefaultSharedPreferences(getContext()).getString("tweaks_reminder_notif_time", "not set")));
+
+                            // Followed this tutorial
+                            // https://stackoverflow.com/questions/20262711/send-notification-once-in-a-week
+                            // https://stackoverflow.com/questions/34517520/how-to-give-notifications-on-android-on-specific-time
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTimeInMillis(System.currentTimeMillis());
+                            calendar.set(Calendar.HOUR_OF_DAY, hour);
+                            calendar.set(Calendar.MINUTE, minute);
+                            Intent intent = new Intent(getContext(), NotificationBoradcastReceiver.class);
+                            PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), 1, intent, 0);
+                            AlarmManager am = (AlarmManager)getContext().getSystemService(Activity.ALARM_SERVICE);
+                            am.setInexactRepeating(am.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+                        }
+                    });
+                    builder.setNegativeButton(android.R.string.cancel,null);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                    return true;
+                } else {
+                    Log.d(TAG, "ahah, false");
                 }
                 return true;
             }

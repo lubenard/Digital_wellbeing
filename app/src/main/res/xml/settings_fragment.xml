@@ -27,6 +27,31 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        app:key="cat_datas"
+        app:title="DATAS">
+
+        <Preference
+            app:key="datas_import_data_xml"
+            app:title="Import your data in XML"
+            app:summary="Import your data in XML format"/>
+
+        <Preference
+            app:key="datas_export_data_xml"
+            app:title="Export your data in XML"
+            app:summary="Export your data in XML format"/>
+
+        <Preference
+            app:key="datas_export_data_sqlite"
+            app:title="Export your data in SQLITE"
+            app:summary="Export your data in SQLITE format"/>
+
+        <Preference
+            app:key="datas_erase_data"
+            app:title="Erase all your data"
+            app:summary="This will delete all your data"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
         app:key="cat_tweaks"
         app:title="TWEAKS">
 
@@ -36,41 +61,32 @@
             app:summary="@string/settings_other_permanent_notif_description"
             android:defaultValue="false"/>
 
-        <Preference
-            app:key="tweaks_import_data_xml"
-            app:title="Import your data in XML"
-            app:summary="Import your data in XML format"/>
-
-        <Preference
-            app:key="tweaks_export_data_xml"
-            app:title="Export your data in XML"
-            app:summary="Export your data in XML format"/>
-
-        <Preference
-            app:key="tweaks_export_data_sqlite"
-            app:title="Export your data in SQLITE"
-            app:summary="Export your data in SQLITE format"/>
-
-        <Preference
-            app:key="tweaks_erase_data"
-            app:title="Erase all your data"
-            app:summary="This will delete all your data"/>
-
         <CheckBoxPreference
             app:key="tweaks_restart_reboot"
             app:title="Restart the app at reboot"
             android:defaultValue="true"/>
 
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="tweaks_reminder_notif_enable"
+            android:title="Enable daily notification"
+            app:summary="Currently"/>
+
     </PreferenceCategory>
 
-    <Preference
-        app:key="other_dev_settings"
-        app:title="@string/settings_other_dev_title"
-        app:summary="@string/settings_other_dev_description"/>
+    <PreferenceCategory
+        app:key="cat_other"
+        app:title="OTHER">
 
-    <Preference
-        app:key="other_feedback"
-        app:title="@string/settings_other_feedback_title"
-        app:summary="@string/settings_other_feedback_description"/>
+        <Preference
+            app:key="other_dev_settings"
+            app:title="@string/settings_other_dev_title"
+            app:summary="@string/settings_other_dev_description"/>
+
+        <Preference
+            app:key="other_feedback"
+            app:title="@string/settings_other_feedback_title"
+            app:summary="@string/settings_other_feedback_description"/>
+    </PreferenceCategory>
 
 </PreferenceScreen>
